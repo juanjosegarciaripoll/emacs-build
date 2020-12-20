@@ -150,6 +150,11 @@ function action0_clean ()
     rm -rf "$emacs_build_build_dir" "$emacs_build_install_dir"
 }
 
+function action0_clean_rest ()
+{
+    rm -rf "$emacs_build_git_dir" "$emacs_build_zip_dir"
+}
+
 function action0_clone ()
 {
     clone_repo "$branch" "$emacs_repo" "$emacs_source_dir"
@@ -334,6 +339,7 @@ while test -n "$*"; do
             dependency_exclusions="$slim_exclusions"
             ;;
         --clean) actions="action0_clean $actions";;
+        --clean-all) actions="action0_clean action0_clean_rest $actions";;
         --clone) actions="$actions action0_clone";;
         --ensure) actions="$actions action1_ensure_packages";;
         --build) actions="$actions action2_build";;
