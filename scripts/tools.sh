@@ -1,6 +1,6 @@
 function errcho ()
 {
-    echo $@ >&2
+    echo "$@" >&2
 }
 
 function elements_not_in_list ()
