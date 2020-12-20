@@ -28,9 +28,9 @@
 # See write_help below for all options.
 #
 
-. extras/tools.sh
-. extras/pdf-tools.sh
-. extras/hunspell.sh
+. scripts/tools.sh
+. scripts/pdf-tools.sh
+. scripts/hunspell.sh
 
 function write_help () {
     cat <<EOF
