@@ -27,22 +27,28 @@ different computers, with the following conditions
 ## Usage
 
 ````
+Usage:
+
    ./emacs-build.sh [-64] [-32] [--branch b]
-                    [--clone] [--ensure] [--build] [--deps] [--package]
+                    [--clone] [--ensure] [--build] [--deps] [--pack-emacs] [--pack-all]
                     [--without-X] [--with-X]
+                    [--pdf-tools]
 
 Actions:
 
+   --clean       Remove all directories except sources and zip files
    --clone       Download Savannah's git repository for Emacs
    --ensure      Ensure that required packages are installed
    --build       Configure and build Emacs from sources
    --deps        Create a ZIP file with all the Mingw64/32 dependencies
-   --package     Package an Emacs previously built with the --build option
+   --pack-emacs  Package an Emacs previously built with the --build option
+   --pack-all    Package an Emacs previously built, with all the Mingw64/32
+                 dependencies, as well as all extensions (see Extensions below)
 
    Multiple actions can be selected. The default is to run them all in a logical
    order: clone, ensure, build, deps and package.
 
-Options:
+Emacs options:
    -64           Prepare or build for Mingw64 (default)
    -32           Prepare or build for Mingw32
    --branch b    Select branch 'b' for the remaining operations
@@ -52,6 +58,10 @@ Options:
    --with-X      Add requested feature in the dependencies and build
    --without-X   Remove requested feature in the dependencies and build
 
-   X is any of the known features for emacs in Windows/Mingw:
-     $all_features
+   X is any of the known features for emacs in Windows/Mingw (png, gif, etc)
+
+Extensions:
+
+   --pdf-tools   Build and package PDF-TOOLS
+   --hunspell    Include Eli Zaretskii's port of Hunspell
 ````
