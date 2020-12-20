@@ -30,7 +30,7 @@ different computers, with the following conditions
 Usage:
 
    ./emacs-build.sh [-64] [-32] [--branch b]
-                    [--clone] [--ensure] [--build] [--deps] [--pack-emacs] [--pack-all]
+                    [--clone] [--build] [--deps] [--pack-emacs] [--pack-all]
                     [--without-X] [--with-X]
                     [--pdf-tools]
 
@@ -38,7 +38,6 @@ Actions:
 
    --clean       Remove all directories except sources and zip files
    --clone       Download Savannah's git repository for Emacs
-   --ensure      Ensure that required packages are installed
    --build       Configure and build Emacs from sources
    --deps        Create a ZIP file with all the Mingw64/32 dependencies
    --pack-emacs  Package an Emacs previously built with the --build option
@@ -46,7 +45,7 @@ Actions:
                  dependencies, as well as all extensions (see Extensions below)
 
    Multiple actions can be selected. The default is to run them all in a logical
-   order: clone, ensure, build, deps and package.
+   order: clone, build, deps and pack-all.
 
 Emacs options:
    -64           Prepare or build for Mingw64 (default)
@@ -65,3 +64,19 @@ Extensions:
    --pdf-tools   Build and package PDF-TOOLS
    --hunspell    Include Eli Zaretskii's port of Hunspell
 ````
+
+## What this does
+
+Assume you invoke this script as follows
+````
+./emacs-build.sh --slim --clone --ensure --build --deps --pdf-tools --hunspell --pack-all
+````
+
+It will take care of the following tasks
+
+1. Clone the latest emacs repository on the branch emacs-27
+2. Ensure that all required packages Mingw64 are installed, or install them.
+3. Configure and build Emacs using those packages
+4. Pack all the dependencies into a ZIP file.
+5. Download and build pdf-tools, hunspell or other extensions mentioned above. In the process, ensure that the required packages are also installed.
+6. Create a ZIP file with Emacs, all the dependencies and all the extensions.
