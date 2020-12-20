@@ -69,6 +69,7 @@ function full_dependency_list ()
     # Input
     #  $1 = list of packages without dependencies
     #  $2 = list of packages to skip
+    #  $3 = Origin of this list
     #
     # Packages that have to be replaced by others for distribution
     local munge_pgks="
@@ -79,11 +80,30 @@ function full_dependency_list ()
     local skip_pkgs=`for p in $2; do echo s,$mingw_prefix-$p,,g; done`
     local oldpackages=""
     local dependencies=""
-    while test "$oldpackages" != "$packages" ; do
-        oldpackages="$packages"
-        dependencies=`pacman -Qii $oldpackages | grep Depends | sed -e 's,>=[^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g;' -e "$skip_pkgs" -e "$munge_pgks"`
-        packages=`echo $oldpackages $dependencies | sed -e 's, ,\n,g' | sort | uniq`
-    done
+    if "$debug_dependency_list"; then
+        local dependencies
+        local newpackages
+        errcho "Debugging package list for $3"
+        while test "$oldpackages" != "$packages" ; do
+            oldpackages="$packages"
+            for p in $packages; do
+                dependencies=`pacman -Qii $p | grep Depends | sed -e 's,>=[^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g;' -e "$skip_pkgs" -e "$munge_pgks"`
+                newpackages=`elements_not_in_list "$dependencies" "$packages"`
+                if test -n "$newpackages"; then
+                    errcho "Package $p introduces"
+                    for i in $newpackages; do errcho "  $i"; done
+                    packages="$packages $newpackages"
+                fi
+            done
+            packages=`echo $packages | sed -e 's, ,\n,g' | sort | uniq`
+        done
+    else
+        while test "$oldpackages" != "$packages" ; do
+            oldpackages="$packages"
+            dependencies=`pacman -Qii $oldpackages | grep Depends | sed -e 's,>=[^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g;' -e "$skip_pkgs" -e "$munge_pgks"`
+            packages=`echo $oldpackages $dependencies | sed -e 's, ,\n,g' | sort | uniq`
+        done
+    fi
     echo $packages
 }
 

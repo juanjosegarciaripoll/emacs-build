@@ -100,6 +100,12 @@ function check_mingw_architecture ()
     fi
 }
 
+function emacs_root_packages ()
+{
+    local feature_selector=`echo $features | sed -e 's, ,|,g'`
+    feature_list | grep -E "$feature_selector" | cut -d ' ' -f 2-
+}
+
 function emacs_dependencies ()
 {
     # Print the list of all mingw/msys packages required for running emacs with
@@ -108,12 +114,12 @@ function emacs_dependencies ()
     if test -z "$emacs_dependencies"; then
         errcho Inspecting required packages for build features
         errcho   $features
-        local feature_selector=`echo $features | sed -e 's, ,|,g'`
-        local packages=`feature_list | grep -E "$feature_selector" | cut -d ' ' -f 2-`
-        #emacs_dependencies=`full_dependency_list "$packages" "glib2"`
-        emacs_dependencies=`full_dependency_list "$packages" ""`
+        local packages=`emacs_root_packages`
+        emacs_dependencies=`full_dependency_list "$packages" "glib2" "Emacs"`
         errcho Total packages required:
-        errcho   `echo $emacs_dependencies | sed -e 's, ,\n,g' -`
+        for p in $emacs_dependencies; do
+            errcho "  $p"
+        done
     fi
     echo $emacs_dependencies
 }
@@ -278,7 +284,7 @@ function add_feature () {
 
 function dependency_filter () {
     if test -z "$dependency_exclusions"; then
-        cat -
+         cat -
     else
         grep -E -v "^(`echo $slim_exclusions | sed 's, ,|,g'`)" -
     fi
@@ -313,6 +319,7 @@ branches=""
 architectures=""
 actions=""
 do_clean=""
+debug_dependency_list="false"
 while test -n "$*"; do
     case $1 in
         -64) architectures="$architectures x86_64";;
@@ -334,6 +341,7 @@ while test -n "$*"; do
         --pack-emacs) actions="$actions action4_package_emacs";;
         --pack-all) actions="$actions action5_package_all";;
         --pdf-tools) actions="$actions action3_pdf_tools";;
+        --debug-dependencies) debug_dependency_list="true";;
         --hunspell) actions="$actions action3_hunspell";;
         --help) write_help; exit 0;;
         *) echo Unknown option "$1". Aborting; exit -1;;
