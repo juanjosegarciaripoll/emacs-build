@@ -32,7 +32,9 @@ function write_help () {
     cat <<EOF
 Usage:
 
-   ./emacs-build.sh [-64] [-32] [--clone] [--build] [--deps] [--without-X] [--with-X]
+   ./emacs-build.sh [-64] [-32] [--branch b]
+                    [--clone] [--ensure] [--build] [--deps] [--package]
+                    [--without-X] [--with-X]
 
 Actions:
 
@@ -48,6 +50,7 @@ Actions:
 Options:
    -64           Prepare or build for Mingw64 (default)
    -32           Prepare or build for Mingw32
+   --branch b    Select branch 'b' for the remaining operations
    --slim        Remove Cairo, SVG and TIFF support for a slimmer build
                  Remove also documentation files and other support files
                  from the dependencies file
