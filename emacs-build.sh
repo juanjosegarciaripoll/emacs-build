@@ -28,6 +28,8 @@
 # See write_help below for all options.
 #
 
+. extras/tools.sh
+
 function write_help () {
     cat <<EOF
 Usage:
@@ -58,42 +60,9 @@ Options:
    --without-X   Remove requested feature in the dependencies and build
 
    X is any of the known features for emacs in Windows/Mingw:
-     $all_features
+     `echo $all_features | sed -e 's,\n, ,g'`
 EOF
 
-}
-
-function errcho ()
-{
-    echo $@ >&2
-}
-
-
-function full_dependency_list ()
-{
-    # Given a list of packages, print a list of all dependencies
-    #
-    # Input
-    #  $1 = list of packages without dependencies
-    #
-    # Packages we do not want to distribute (spurious dependencies)
-    local skip_pkgs="glib2"
-    # Packages that have to be replaced by others for distribution
-    local munge_pgks="
-        s,$mingw_prefix-libwinpthread,$mingw_prefix-libwinpthread-git,g;
-        s,$mingw_prefix-libtre,$mingw_prefix-libtre-git,g;"
-
-    local packages=`for i in $packages; do echo $mingw_prefix-$i; done`
-    local skip_pkgs=`for p in $skip_pkgs; do echo s,$mingw_prefix-$p,,g; done`
-
-    local oldpackages=""
-    local dependencies=""
-    while test "$oldpackages" != "$packages" ; do
-        oldpackages="$packages"
-        dependencies=`pacman -Qii $oldpackages | grep Depends | sed -e 's,>=[^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g;' -e "$skip_pkgs" -e "$munge_pgks"`
-        packages=`echo $oldpackages $dependencies | sed -e 's, ,\n,g' | sort | uniq`
-    done
-    echo $packages
 }
 
 function emacs_dependencies ()
@@ -106,43 +75,12 @@ function emacs_dependencies ()
         errcho   $features
         local feature_selector=`echo $features | sed -e 's, ,|,g'`
         local packages=`feature_list | grep -E "$feature_selector" | cut -d ' ' -f 2-`
-        emacs_dependencies=`full_dependency_list $packages`
+        #emacs_dependencies=`full_dependency_list "$packages" "glib2"`
+        emacs_dependencies=`full_dependency_list "$packages" ""`
         errcho Total packages required:
         errcho   `echo $emacs_dependencies | sed -e 's, ,\n,g' -`
     fi
     echo $emacs_dependencies
-}
-
-function prepare_source_dir ()
-{
-    if test -d "$source_dir"; then
-        if test -f "$source_dir/configure"; then
-            echo Configure script exists. Nothing to do in source directory $source_dir
-            echo
-            return 0
-        fi
-        cd "$source_dir" && ./autogen.sh && return 0
-        echo Unable to prepare source directory. Autoreconf failed.
-    else
-        echo Source directory $source_dir missing
-        echo Run script with --clone first
-        echo
-    fi
-    return -1
-}
-
-function prepare_build_dir ()
-{
-    if test -d "$build_dir"; then
-        if test -f "$build_dir/config.log"; then
-            rm -rf "$build_dir/*"
-        else
-            echo Cannot rebuild on existing directory $build_dir
-            return -1
-        fi
-    else
-        mkdir -p "$build_dir"
-    fi
 }
 
 function configure_build_dir ()
@@ -168,40 +106,7 @@ function configure_build_dir ()
 
 function action0_clone ()
 {
-    # Download the Emacs source files using Git.
-    #
-    if which git >/dev/null 2>&1; then
-        echo Found git, nothing to install.
-    else
-        echo Git is not found, installing it.
-        pacman -S --noconfirm git
-    fi
-    pushd . >/dev/null
-    local error
-    if test -d "$source_dir"; then
-        echo Updating repository
-        cd "$source_dir"
-        git pull && git reset --hard && git checkout
-        error=$?
-        if test $? != 0; then
-            echo Source repository update failed.
-        fi
-    else
-        echo Cloning Emacs repository from Savannah at $emacs_repo.
-        git clone --depth 1 -b $branch "$emacs_repo" "$source_dir" && \
-            cd "$source_dir" && git config pull.rebase false
-        error=$?
-        if test $? != 0; then
-            echo Git clone failed. Deleting source directory.
-            rm -rf "$source_dir"
-        fi
-    fi
-    #
-    # If there was a 'configure' script, remove it, to force running autoreconf
-    # again before builds.
-    rm -f "$source_dir/configure"
-    popd >/dev/null
-    return $?
+    clone_repo "$branch" "$emacs_repo" "$source_dir"
 }
 
 function action1_ensure_packages ()
@@ -209,18 +114,13 @@ function action1_ensure_packages ()
     # Collect the list of packages required for running Emacs, and ensure they
     # have been installed.
     #
-    echo Ensuring packages are installed
-    if pacman -Qi `emacs_dependencies` >/dev/null; then
-        echo All packages are installed.
-    else
-        echo Some packages are missing. Installing them with pacman.
-        pacman -S --noconfirm -q `emacs_dependencies`
-    fi
+    ensure_packages `emacs_dependencies`
 }
 
 function action2_build ()
 {
-    if prepare_source_dir && prepare_build_dir && configure_build_dir; then
+    if prepare_source_dir $source_dir \
+            && prepare_build_dir $build_dir && configure_build_dir; then
         echo Building Emacs in directory $build_dir
         echo Log file is saved into $log_file
         if make -j 4 -C $build_dir $build_dir >>$log_file 2>&1; then
