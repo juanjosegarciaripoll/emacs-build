@@ -65,7 +65,7 @@ Extensions:
 
 Assume you invoke this script as follows
 ````
-./emacs-build.sh --slim --clone --ensure --build --deps --pdf-tools --hunspell --pack-all
+./emacs-build.sh --slim --clone --build --deps --pdf-tools --hunspell --pack-all
 ````
 
 It will take care of the following tasks
