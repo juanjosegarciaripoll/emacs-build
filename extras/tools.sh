@@ -3,6 +3,24 @@ function errcho ()
     echo $@ >&2
 }
 
+function elements_not_in_list ()
+{
+    output=""
+    for element in $1; do
+        for other in $2; do
+            found=""
+            if test "$element" = "$other"; then
+                found="$element"
+                break
+            fi
+        done
+        if test -z "$found"; then
+            output="$element $output"
+        fi
+    done
+    echo $output
+}
+
 function clone_repo ()
 {
     # Download a Git repo
@@ -43,7 +61,6 @@ function clone_repo ()
     popd >/dev/null
     return $?
 }
-
 
 function full_dependency_list ()
 {

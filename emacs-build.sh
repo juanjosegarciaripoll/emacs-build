@@ -29,6 +29,7 @@
 #
 
 . extras/tools.sh
+. extras/pdf-tools.sh
 
 function write_help () {
     cat <<EOF
@@ -214,7 +215,7 @@ lib/.*.a
 lib/cmake
 lib/gettext/intl
 lib/pkgconfig
-lib/python3.8
+lib/python*
 share/aclocal
 share/doc/gettext
 share/doc/libasprintf
@@ -254,6 +255,7 @@ while test -n "$*"; do
         --build) actions="$actions action2_build";;
         --deps) actions="$actions action3_package_deps";;
         --package) actions="$actions action4_package";;
+        --pdf-tools) actions="$actions action3_pdf_tools";;
         --help) write_help; exit 0;;
     esac
     shift
