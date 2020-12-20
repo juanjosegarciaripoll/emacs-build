@@ -83,9 +83,9 @@ function emacs_dependencies ()
     echo $emacs_dependencies
 }
 
-function configure_build_dir ()
+function emacs_configure_build_dir ()
 {
-    cd "$build_dir"
+    cd "$emacs_build_dir"
     options="--without-compress-install --without-dbus"
     for f in $all_features; do
         if echo $features | grep f > /dev/null; then
@@ -96,7 +96,7 @@ function configure_build_dir ()
     done
     echo Configuring Emacs with options
     echo   $options
-    if "$source_dir/configure" "--prefix=$install_dir" $options >$log_file 2>&1; then
+    if "$emacs_source_dir/configure" "--prefix=$emacs_install_dir" $options >$log_file 2>&1; then
         echo Emacs configured
     else
         echo Configuration failed
@@ -106,7 +106,7 @@ function configure_build_dir ()
 
 function action0_clone ()
 {
-    clone_repo "$branch" "$emacs_repo" "$source_dir"
+    clone_repo "$branch" "$emacs_repo" "$emacs_source_dir"
 }
 
 function action1_ensure_packages ()
@@ -119,13 +119,13 @@ function action1_ensure_packages ()
 
 function action2_build ()
 {
-    if prepare_source_dir $source_dir \
-            && prepare_build_dir $build_dir && configure_build_dir; then
-        echo Building Emacs in directory $build_dir
+    if prepare_source_dir $emacs_source_dir \
+            && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
+        echo Building Emacs in directory $emacs_build_dir
         echo Log file is saved into $log_file
-        if make -j 4 -C $build_dir $build_dir >>$log_file 2>&1; then
-            echo Installing Emacs into directory $install_dir
-            if make -j 4 -C $build_dir install >>$log_file 2>&1; then
+        if make -j 4 -C $emacs_build_dir >>$log_file 2>&1; then
+            echo Installing Emacs into directory $emacs_install_dir
+            if make -j 4 -C $emacs_build_dir install >>$log_file 2>&1; then
                 echo Process succeeded
                 return 0
             fi
@@ -141,11 +141,7 @@ function action3_package_deps ()
     # Collect the list of packages required for running Emacs, gather the files
     # from those packages and compress them into $emacs_depsfile
     #
-    rm -f "$emacs_depsfile"
-    mkdir -p `dirname "$emacs_depsfile"`
-    cd $mingw_dir
-    pacman -Ql `emacs_dependencies` | cut -d ' ' -f 2 | sort | uniq \
-        | sed "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9 "$emacs_depsfile"
+    package_dependencies "$emacs_depsfile" "`emacs_dependencies`"
 }
 
 function action4_package ()
@@ -156,19 +152,19 @@ function action4_package ()
     if test ! -f $emacs_depsfile; then
         echo Missing dependency file $emacs_depsfile. Run with --deps first.
     fi
-    rm -f "$install_dir/bin/emacs-*.exe"
-    strip "$install_dir/bin/*.exe" "$install_dir/libexec/emacs/*/*/*.exe"
+    rm -f "$emacs_install_dir/bin/emacs-*.exe"
+    strip "$emacs_install_dir/bin/*.exe" "$emacs_install_dir/libexec/emacs/*/*/*.exe"
     rm -f "$emacs_nodepsfile"
     mkdir -p `dirname "$emacs_nodepsfile"`
-    cd "$install_dir"
+    cd "$emacs_install_dir"
     if zip -9vr "$emacs_nodepsfile" *; then
         echo Built $emacs_nodepsfile; echo
     else
         echo Failed to compress distribution file $emacs_nodepsfile; echo
         return -1
     fi
-    cp $emacs_depsfile $emacs_distfile
-    cd "$install_dir"
+    cp "$emacs_depsfile" "$emacs_distfile"
+    cd "$emacs_install_dir"
     if zip -9vr "$emacs_distfile" *; then
         echo Built $emacs_distfile; echo
     else
@@ -275,6 +271,11 @@ fi
 features=`for f in $features; do echo $f; done | sort | uniq`
 
 emacs_repo=https://git.savannah.gnu.org/git/emacs.git
+emacs_build_root=`pwd`
+emacs_build_git_dir="$emacs_build_root/git"
+emacs_build_build_dir="$emacs_build_root/build"
+emacs_build_install_dir="$emacs_build_root/pkg"
+emacs_build_zip_dir="$emacs_build_root/zips"
 for branch in $branches; do
     for architecture in $architectures; do
         mingw_prefix="mingw-w64-x86_64"
@@ -288,9 +289,9 @@ for branch in $branches; do
         emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
         emacs_dependencies=""
         for action in $actions; do
-            source_dir="`pwd`/git/$branch"
-            build_dir="`pwd`/build/$branch-$architecture"
-            install_dir="`pwd`/pkg/$branch-$architecture"
+            source_dir="$emacs_build_git_dir/$branch"
+            build_dir="$emacs_build_build_dir/$branch-$architecture"
+            install_dir="$emacs_build_install_dir/$branch-$architecture"
             log_file="${build_dir}.log"
             if $action ; then
                 echo Action $action succeeded.

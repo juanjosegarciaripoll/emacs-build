@@ -82,6 +82,17 @@ function ensure_packages ()
     fi
 }
 
+function package_dependencies ()
+{
+    local zipfile="$1"
+    local dependencies="$2"
+    rm -f "$zipfile"
+    mkdir -p `dirname "$zipfile"`
+    cd $mingw_dir
+    pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
+        | sed "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9 $zipfile
+}
+
 function prepare_source_dir ()
 {
     local source_dir="$1"
