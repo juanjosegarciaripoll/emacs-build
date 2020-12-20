@@ -2,7 +2,7 @@
 
 Scripts to build a distribution of Emacs from sources, using MSYS2 and Mingw64(32)
 
-# Rationale
+## Rationale
 
 I wanted a script to build Emacs from sources, package it and install it on
 different computers, with the following conditions
@@ -24,7 +24,7 @@ different computers, with the following conditions
 - Eventually, the script should be able to build other components I regularly
   use, such as mu, mu4e or pdf-tools.
 
-# Usage
+## Usage
 
 ````
    ./emacs-build.sh [-64] [-32] [--branch b]
