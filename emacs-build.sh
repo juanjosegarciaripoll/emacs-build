@@ -311,11 +311,17 @@ share/doc/libunistring
 share/doc/libxml2
 share/doc/mpfr
 share/doc/tiff
+share/doc/openssl
+share/doc/pcre
+share/doc/sqlite3
 share/doc/xz
 share/gettext/intl
 share/gtk-doc/html/libxml2
 share/man/man3
 share/man/man5
+share/man/mann
+usr
+var
 "
 dependency_exclusions=""
 all_features=`feature_list | cut -f 1 -d ' '`

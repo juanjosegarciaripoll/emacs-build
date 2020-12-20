@@ -38,7 +38,7 @@ function action3_pdf_tools ()
     pdf_tools_install_dir="$emacs_build_install_dir/pdf-tools-$architecture"
     pdf_tools_log_file="$pdf_tools_build_dir/log"
     pdf_tools_zip_file="$emacs_build_zip_dir/pdf-tools-${architecture}.zip"
-    pdf_tools_skip_packages="curl python nss"
+    pdf_tools_skip_packages="python tcl"
 
     if test -f $pdf_tools_zip_file; then
         echo File $pdf_tools_zip_file already exists. Refusing to rebuild.
