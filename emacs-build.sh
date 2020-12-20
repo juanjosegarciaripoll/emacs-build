@@ -370,7 +370,7 @@ for architecture in $architectures; do
             emacs_source_dir="$emacs_build_git_dir/$branch"
             emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
             emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
-            log_file="${build_dir}.log"
+            log_file="${emacs_build_dir}.log"
             if $action ; then
                 echo Action $action succeeded.
             else
