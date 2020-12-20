@@ -3,7 +3,10 @@ hunspell_zip_file="$emacs_build_zip_dir/hunspell.zip"
 
 function action3_hunspell ()
 {
-    if curl -L "$hunspell_link" > $hunspell_zip_file; then
+    if test -f "$hunspell_zip_file"; then
+        echo File `basename $hunspell_zip_file` already exists.
+        return 0
+    elif curl -L "$hunspell_link" > $hunspell_zip_file; then
         emacs_extensions="$hunspell_zip_file $emacs_extensions"
         return 0
     else
