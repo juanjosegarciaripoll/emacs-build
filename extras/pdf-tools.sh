@@ -39,16 +39,12 @@ function action3_pdf_tools ()
     pdf_tools_log_file="$pdf_tools_build_dir/log"
     pdf_tools_zip_file="$emacs_build_zip_dir/pdf-tools-${architecture}.zip"
 
-    if test ! -f "$emacs_install_dir/bin/emacs.exe"; then
-        echo You must build Emacs first using --build before PDF-TOOLS
-        echo
-        return -1
+    if test -f $pdf_tools_zip_file; then
+        echo File $pdf_tools_zip_file already exists. Refusing to rebuild.
+        return 0
     fi
 
-    pdf_tools_package
-    exit 0
-
-    rm -f $pdf_tools_log_file
+    rm -f "$pdf_tools_log_file"
     pdf_tools_ensure_packages \
         && pdf_tools_clone \
         && prepare_source_dir "$pdf_tools_server_dir" \
@@ -57,7 +53,9 @@ function action3_pdf_tools ()
         && pdf_tools_configure \
         && pdf_tools_build \
         && pdf_tools_install \
-        && pdf_tools_package
+        && pdf_tools_package \
+        && emacs_extensions="$pdf_tools_zip_file $emacs_extensions" \
+        && rm -rf "$pdf_tools_build_dir" "$pdf_tools_install_dir"
 }
 
 function pdf_tools_ensure_packages ()
@@ -128,5 +126,5 @@ function pdf_tools_package ()
 {
     package_dependencies "$pdf_tools_zip_file" "`pdf_tools_dependencies`" \
         && cd "$pdf_tools_install_dir" \
-        && zip -9r "$pdf_tools_zip_file" *
+        && zip -9r "$pdf_tools_zip_file" * >> "$pdf_tools_log_file" 2>&1
 }

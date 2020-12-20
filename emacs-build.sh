@@ -30,27 +30,32 @@
 
 . extras/tools.sh
 . extras/pdf-tools.sh
+. extras/hunspell.sh
 
 function write_help () {
     cat <<EOF
 Usage:
 
    ./emacs-build.sh [-64] [-32] [--branch b]
-                    [--clone] [--ensure] [--build] [--deps] [--package]
+                    [--clone] [--ensure] [--build] [--deps] [--package] [--full]
                     [--without-X] [--with-X]
+                    [--pdf-tools]
 
 Actions:
 
+   --clean       Remove all directories except sources and zip files
    --clone       Download Savannah's git repository for Emacs
    --ensure      Ensure that required packages are installed
    --build       Configure and build Emacs from sources
    --deps        Create a ZIP file with all the Mingw64/32 dependencies
-   --package     Package an Emacs previously built with the --build option
+   --pack-emacs  Package an Emacs previously built with the --build option
+   --pack        Package an Emacs previously built, with all the Mingw64/32
+                 dependencies, as well as all extensions (see Extensions below)
 
    Multiple actions can be selected. The default is to run them all in a logical
    order: clone, ensure, build, deps and package.
 
-Options:
+Emacs options:
    -64           Prepare or build for Mingw64 (default)
    -32           Prepare or build for Mingw32
    --branch b    Select branch 'b' for the remaining operations
@@ -62,8 +67,38 @@ Options:
 
    X is any of the known features for emacs in Windows/Mingw:
      `echo $all_features | sed -e 's,\n, ,g'`
+
+Extensions:
+
+   --pdf-tools   Build and package PDF-TOOLS
+   --hunspell    Include Eli Zaretskii's port of Hunspell
+
 EOF
 
+}
+
+function check_mingw_architecture ()
+{
+    mingw_prefix="mingw-w64-x86_64"
+    mingw_dir="/mingw64/"
+    if test $architecture = i686; then
+        if test "$MSYSTEM" = MINGW32; then
+            mingw_prefix="mingw-w64-i686"
+            mignw_dir="/mingw32/"
+        else
+            # We should fix this by relaunching the script on a
+            # different environment
+            echo Cannot build 32-bit architecture on a 64-bit MINGW prompt
+            echo
+            exit -1
+        fi
+    elif test "$MSYSTEM" = MINGW32; then
+        # We should fix this by relaunching the script on a
+        # different environment
+        echo Cannot build a 64-bit architecture on a 32-bit MINGW prompt
+        echo
+        exit -1
+    fi
 }
 
 function emacs_dependencies ()
@@ -105,6 +140,11 @@ function emacs_configure_build_dir ()
     fi
 }
 
+function action0_clean ()
+{
+    rm -rf "$emacs_build_build_dir" "$emacs_build_install_dir"
+}
+
 function action0_clone ()
 {
     clone_repo "$branch" "$emacs_repo" "$emacs_source_dir"
@@ -137,6 +177,14 @@ function action2_build ()
     return -1
 }
 
+function install_emacs ()
+{
+    rm -rf "$emacs_install_dir"
+    mkdir -p "$emacs_install_dir"
+    echo Installing Emacs into directory $emacs_install_dir
+    make -j 4 -C $emacs_build_dir install >>$log_file 2>&1
+}
+
 function action3_package_deps ()
 {
     # Collect the list of packages required for running Emacs, gather the files
@@ -145,31 +193,58 @@ function action3_package_deps ()
     package_dependencies "$emacs_depsfile" "`emacs_dependencies`"
 }
 
-function action4_package ()
+function action4_package_emacs ()
 {
     # Package a prebuilt emacs with and without the required dependencies, ready
     # for distribution.
     #
     if test ! -f $emacs_depsfile; then
         echo Missing dependency file $emacs_depsfile. Run with --deps first.
-    fi
-    rm -f "$emacs_install_dir/bin/emacs-*.exe"
-    strip "$emacs_install_dir/bin/*.exe" "$emacs_install_dir/libexec/emacs/*/*/*.exe"
-    rm -f "$emacs_nodepsfile"
-    mkdir -p `dirname "$emacs_nodepsfile"`
-    cd "$emacs_install_dir"
-    if zip -9vr "$emacs_nodepsfile" *; then
-        echo Built $emacs_nodepsfile; echo
-    else
-        echo Failed to compress distribution file $emacs_nodepsfile; echo
         return -1
     fi
-    cp "$emacs_depsfile" "$emacs_distfile"
-    cd "$emacs_install_dir"
-    if zip -9vr "$emacs_distfile" *; then
-        echo Built $emacs_distfile; echo
+    if install_emacs; then
+        rm -f "$emacs_install_dir/bin/emacs-*.exe"
+        strip "$emacs_install_dir/bin/*.exe" "$emacs_install_dir/libexec/emacs/*/*/*.exe"
+        rm -f "$emacs_nodepsfile"
+        mkdir -p `dirname "$emacs_nodepsfile"`
+        cd "$emacs_install_dir"
+        if zip -9vr "$emacs_nodepsfile" *; then
+            echo Built $emacs_nodepsfile; echo
+        else
+            echo Failed to compress distribution file $emacs_nodepsfile; echo
+            return -1
+        fi
     else
-        echo Failed to compress distribution file $emacs_distfile; echo
+        echo Failed to install Emacs
+        return -1
+    fi
+}
+
+function action5_package_all ()
+{
+    for zipfile in "$emacs_depsfile" $emacs_extensions; do
+        if test ! -f "$zipfile"; then
+            echo Missing zip file `basename $zipfile.` Cannot build full distribution.
+            echo Please use --deps and --build before --full.
+            echo
+            return -1
+        fi
+    done
+    if install_emacs; then
+        cd "$emacs_install_dir"
+        for zipfile in "$emacs_depsfile" $emacs_extensions; do
+            echo Unzipping $zipfile
+            if unzip -ox $zipfile >> $log_file; then
+                echo Done!;
+            else
+                echo Failed to unzip $zipfile
+                return -1
+            fi
+        done
+        find "$emacs_install_dir" -type f -a -name *.exe -o -name *.dll | xargs strip
+        find . -type f | sort | dependency_filter | xargs zip -9vr "$emacs_distfile" >> $log_file
+    else
+        echo Failed to install Emacs
         return -1
     fi
 }
@@ -237,6 +312,7 @@ features="$all_features"
 branches=""
 architectures=""
 actions=""
+do_clean=""
 while test -n "$*"; do
     case $1 in
         -64) architectures="$architectures x86_64";;
@@ -250,12 +326,15 @@ while test -n "$*"; do
             delete_feature tiff
             dependency_exclusions="$slim_exclusions"
             ;;
+        --clean) actions="action0_clean $actions";;
         --clone) actions="$actions action0_clone";;
         --ensure) actions="$actions action1_ensure_packages";;
         --build) actions="$actions action2_build";;
         --deps) actions="$actions action3_package_deps";;
-        --package) actions="$actions action4_package";;
+        --package) actions="$actions action4_package_emacs";;
+        --full) actions="$actions action5_package_all";;
         --pdf-tools) actions="$actions action3_pdf_tools";;
+        --hunspell) actions="$actions action3_hunspell";;
         --help) write_help; exit 0;;
     esac
     shift
@@ -278,22 +357,18 @@ emacs_build_git_dir="$emacs_build_root/git"
 emacs_build_build_dir="$emacs_build_root/build"
 emacs_build_install_dir="$emacs_build_root/pkg"
 emacs_build_zip_dir="$emacs_build_root/zips"
-for branch in $branches; do
-    for architecture in $architectures; do
-        mingw_prefix="mingw-w64-x86_64"
-        mingw_dir="/mingw64/"
-        if test $architecture = i686; then
-            mingw_prefix="mingw-w64-i686"
-            mignw_dir="/mingw32/"
-        fi
+for architecture in $architectures; do
+    check_mingw_architecture
+    for branch in $branches; do
+        emacs_extensions=""
         emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
         emacs_depsfile="`pwd`/zips/emacs-${branch}-${architecture}-deps.zip"
         emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
         emacs_dependencies=""
         for action in $actions; do
-            source_dir="$emacs_build_git_dir/$branch"
-            build_dir="$emacs_build_build_dir/$branch-$architecture"
-            install_dir="$emacs_build_install_dir/$branch-$architecture"
+            emacs_source_dir="$emacs_build_git_dir/$branch"
+            emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
+            emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
             log_file="${build_dir}.log"
             if $action ; then
                 echo Action $action succeeded.
