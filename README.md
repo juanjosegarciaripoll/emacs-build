@@ -10,17 +10,13 @@ different computers, with the following conditions
 - I should be able to build any branch or release from Emacs. This includes
   the last release branch (right now emacs-27), as well as the master branch
   for development. Always using pristine sources from Savannah.
-
 - I want to build emacs with different options from the default, which is to
   use all features available. For instance, I do not care for SVG support.
-
 - The script needs to track all packages that are required by the Emacs build
   even if I change the build options.
-
 - The installation should take as little space as possible, removing useless
   directories or files that come from the dependencies. For instance, headers
   from libraries used by emacs, spurious documentation files, etc.
-
 - Eventually, the script should be able to build other components I regularly
   use, such as mu, mu4e or pdf-tools.
 
@@ -80,3 +76,10 @@ It will take care of the following tasks
 4. Pack all the dependencies into a ZIP file.
 5. Download and build pdf-tools, hunspell or other extensions mentioned above. In the process, ensure that the required packages are also installed.
 6. Create a ZIP file with Emacs, all the dependencies and all the extensions.
+
+The script, just like its creator, is a bit opinionated. It performs takes some extra steps to reduce the size of the distribution
+
+- It eliminates the manual pages and large documentation files for the libraries
+  that are used by Emacs.
+- It eliminates the library files (*.a).
+- It strips the executable files and DLL's from debugging information.
