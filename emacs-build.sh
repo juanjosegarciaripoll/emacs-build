@@ -37,7 +37,7 @@ function write_help () {
 Usage:
 
    ./emacs-build.sh [-64] [-32] [--branch b]
-                    [--clone] [--ensure] [--build] [--deps] [--pack-emacs] [--pack-all]
+                    [--clone] [--build] [--deps] [--pack-emacs] [--pack-all]
                     [--without-X] [--with-X]
                     [--pdf-tools]
 
@@ -45,7 +45,6 @@ Actions:
 
    --clean       Remove all directories except sources and zip files
    --clone       Download Savannah's git repository for Emacs
-   --ensure      Ensure that required packages are installed
    --build       Configure and build Emacs from sources
    --deps        Create a ZIP file with all the Mingw64/32 dependencies
    --pack-emacs  Package an Emacs previously built with the --build option
@@ -53,7 +52,7 @@ Actions:
                  dependencies, as well as all extensions (see Extensions below)
 
    Multiple actions can be selected. The default is to run them all in a logical
-   order: clone, ensure, build, deps and package.
+   order: clone, build, deps and pack-all.
 
 Emacs options:
    -64           Prepare or build for Mingw64 (default)
@@ -160,6 +159,7 @@ function action1_ensure_packages ()
 
 function action2_build ()
 {
+    action1_ensure_packages
     if prepare_source_dir $emacs_source_dir \
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
         echo Building Emacs in directory $emacs_build_dir
@@ -348,7 +348,7 @@ if test -z "$branches"; then
 fi
 actions=`for a in $actions; do echo $a; done|sort`
 if test -z "$actions"; then
-    actions="action0_clone action1_ensure_packages action2_build action3_package_deps action4_package"
+    actions="action0_clone action2_build action3_package_deps action5_package_all"
 fi
 features=`for f in $features; do echo $f; done | sort | uniq`
 
