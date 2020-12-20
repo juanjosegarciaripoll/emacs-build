@@ -37,7 +37,7 @@ function write_help () {
 Usage:
 
    ./emacs-build.sh [-64] [-32] [--branch b]
-                    [--clone] [--ensure] [--build] [--deps] [--package] [--full]
+                    [--clone] [--ensure] [--build] [--deps] [--pack-emacs] [--pack-all]
                     [--without-X] [--with-X]
                     [--pdf-tools]
 
@@ -49,7 +49,7 @@ Actions:
    --build       Configure and build Emacs from sources
    --deps        Create a ZIP file with all the Mingw64/32 dependencies
    --pack-emacs  Package an Emacs previously built with the --build option
-   --pack        Package an Emacs previously built, with all the Mingw64/32
+   --pack-all    Package an Emacs previously built, with all the Mingw64/32
                  dependencies, as well as all extensions (see Extensions below)
 
    Multiple actions can be selected. The default is to run them all in a logical
@@ -331,11 +331,12 @@ while test -n "$*"; do
         --ensure) actions="$actions action1_ensure_packages";;
         --build) actions="$actions action2_build";;
         --deps) actions="$actions action3_package_deps";;
-        --package) actions="$actions action4_package_emacs";;
-        --full) actions="$actions action5_package_all";;
+        --pack-emacs) actions="$actions action4_package_emacs";;
+        --pack-all) actions="$actions action5_package_all";;
         --pdf-tools) actions="$actions action3_pdf_tools";;
         --hunspell) actions="$actions action3_hunspell";;
         --help) write_help; exit 0;;
+        *) echo Unknown option "$1". Aborting; exit -1;;
     esac
     shift
 done
