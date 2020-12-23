@@ -97,6 +97,11 @@ function check_mingw_architecture ()
         echo Cannot build a 64-bit architecture on a 32-bit MINGW prompt
         echo
         exit -1
+    elif test "$MSYSTEM" = MSYS; then
+        echo This tool cannot be ran from an MSYS shell.
+        echo Please open a Mingw64 or Mingw32 terminal.
+        echo
+        exit -1
     else
         echo This tool must be run from a Mingw64/32 system
         echo
