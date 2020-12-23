@@ -97,8 +97,40 @@ function check_mingw_architecture ()
         echo Cannot build a 64-bit architecture on a 32-bit MINGW prompt
         echo
         exit -1
+    else
+        echo This tool must be run from a Mingw64/32 system
+        echo
+        exit -1
     fi
 }
+
+function ensure_mingw_build_software ()
+{
+    local build_packages="base-devel ${mingw_prefix}-toolchain"
+    if pacman -Qi $build_packages; then
+        echo $MSYSTEM build software has been installed
+    else
+        echo Installing basic development software for $MSYSTEM
+        pacman -S --needed $build_packages
+        if test "$?" != 0; then
+            echo Unable to install $build_packages
+            echo Giving up
+            exit -1
+        fi
+    fi
+    if which git >/dev/null 2>&1; then
+        echo Git is already installed
+    else
+        echo Installing Git for MSYS2
+        pacman -S git
+        if test "$?" != 0; then
+            echo Unable to install Git
+            echo Giving up
+            exit -1
+        fi
+    fi
+}
+
 
 function emacs_root_packages ()
 {
@@ -380,6 +412,7 @@ emacs_build_install_dir="$emacs_build_root/pkg"
 emacs_build_zip_dir="$emacs_build_root/zips"
 for architecture in $architectures; do
     check_mingw_architecture
+    ensure_mingw_build_software
     for branch in $branches; do
         emacs_extensions=""
         emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
