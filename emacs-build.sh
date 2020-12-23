@@ -78,8 +78,6 @@ EOF
 
 function check_mingw_architecture ()
 {
-    mingw_prefix="mingw-w64-x86_64"
-    mingw_dir="/mingw64/"
     if test $architecture = i686; then
         if test "$MSYSTEM" = MINGW32; then
             mingw_prefix="mingw-w64-i686"
@@ -91,6 +89,9 @@ function check_mingw_architecture ()
             echo
             exit -1
         fi
+    elif test "$MSYSTEM" = MINGW64; then
+        mingw_prefix="mingw-w64-x86_64"
+        mingw_dir="/mingw64/"
     elif test "$MSYSTEM" = MINGW32; then
         # We should fix this by relaunching the script on a
         # different environment
@@ -116,7 +117,7 @@ function ensure_mingw_build_software ()
         echo $MSYSTEM build software has been installed
     else
         echo Installing basic development software for $MSYSTEM
-        pacman -S --needed $build_packages
+        pacman -S --noconfirm --needed $build_packages
         if test "$?" != 0; then
             echo Unable to install $build_packages
             echo Giving up
