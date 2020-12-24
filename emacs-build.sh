@@ -222,12 +222,14 @@ function action2_build ()
     return -1
 }
 
-function install_emacs ()
+function action2_install ()
 {
     rm -rf "$emacs_install_dir"
     mkdir -p "$emacs_install_dir"
     echo Installing Emacs into directory $emacs_install_dir
-    make -j 4 -C $emacs_build_dir install >>$log_file 2>&1
+    make -j 4 -C $emacs_build_dir install >>$log_file 2>&1 \
+        && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
+        && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+'
 }
 
 function action3_package_deps ()
@@ -247,20 +249,13 @@ function action4_package_emacs ()
         echo Missing dependency file $emacs_depsfile. Run with --deps first.
         return -1
     fi
-    if install_emacs; then
-        rm -f "$emacs_install_dir/bin/emacs-*.exe"
-        strip "$emacs_install_dir/bin/*.exe" "$emacs_install_dir/libexec/emacs/*/*/*.exe"
-        rm -f "$emacs_nodepsfile"
-        mkdir -p `dirname "$emacs_nodepsfile"`
-        cd "$emacs_install_dir"
-        if zip -9vr "$emacs_nodepsfile" *; then
-            echo Built $emacs_nodepsfile; echo
-        else
-            echo Failed to compress distribution file $emacs_nodepsfile; echo
-            return -1
-        fi
+    rm -f "$emacs_nodepsfile"
+    mkdir -p `dirname "$emacs_nodepsfile"`
+    cd "$emacs_install_dir"
+    if zip -9vr "$emacs_nodepsfile" *; then
+        echo Built $emacs_nodepsfile; echo
     else
-        echo Failed to install Emacs
+        echo Failed to compress distribution file $emacs_nodepsfile; echo
         return -1
     fi
 }
@@ -270,14 +265,16 @@ function action5_package_all ()
     for zipfile in "$emacs_depsfile" $emacs_extensions; do
         if test ! -f "$zipfile"; then
             echo Missing zip file `basename $zipfile.` Cannot build full distribution.
-            echo Please use --deps and --build before --full.
+            echo Please use --deps, --build and all extension options before --full.
             echo
             return -1
         fi
     done
-    if install_emacs; then
+    local emacs_full_install_dir="${emacs_install_dir}-full"
+    rm -rf "$emacs_full_install_dir"
+    if cp -rf "$emacs_install_dir" "$emacs_full_install_dir"; then
         rm -f "$emacs_distfile"
-        cd "$emacs_install_dir"
+        cd "$emacs_full_install_dir"
         for zipfile in "$emacs_depsfile" $emacs_extensions; do
             echo Unzipping $zipfile
             if unzip -ox $zipfile >> $log_file; then
@@ -287,11 +284,8 @@ function action5_package_all ()
                 return -1
             fi
         done
-        find "$emacs_install_dir" -type f -a -name *.exe -o -name *.dll | xargs strip
+        find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | xargs strip
         find . -type f | sort | dependency_filter | xargs zip -9vr "$emacs_distfile" >> $log_file
-    else
-        echo Failed to install Emacs
-        return -1
     fi
 }
 
@@ -320,6 +314,10 @@ function delete_feature () {
 
 function add_feature () {
     features=`echo $features $1 | sort | uniq`
+}
+
+function add_actions () {
+    actions="$actions $*"
 }
 
 function dependency_filter () {
@@ -393,19 +391,19 @@ while test -n "$*"; do
             delete_feature tiff
             dependency_exclusions="$slim_exclusions"
             ;;
-        --clean) actions="action0_clean $actions";;
-        --clean-all) actions="action0_clean action0_clean_rest $actions";;
-        --clone) actions="$actions action0_clone";;
-        --ensure) actions="$actions action1_ensure_packages";;
-        --build) actions="$actions action2_build";;
-        --deps) actions="$actions action3_package_deps";;
-        --pack-emacs) actions="$actions action4_package_emacs";;
-        --pack-all) actions="$actions action5_package_all";;
-        --pdf-tools) actions="$actions action3_pdf_tools";;
-        --mu) actions="$actions action3_mu";;
-        --isync) actions="$actions action3_isync";;
+        --clean) add_actions action0_clean;;
+        --clean-all) add_actions action0_clean action0_clean_rest;;
+        --clone) add_actions action0_clone;;
+        --ensure) add_actions action1_ensure_packages;;
+        --build) add_actions action2_build;;
+        --deps) add_actions action3_package_deps;;
+        --pack-emacs) add_actions action2_install action4_package_emacs;;
+        --pack-all) add_actions action2_install action5_package_all;;
+        --pdf-tools) add_actions action2_install action3_pdf_tools;;
+        --mu) add_actions action2_install action3_mu;;
+        --isync) add_actions action3_isync;;
         --debug-dependencies) debug_dependency_list="true";;
-        --hunspell) actions="$actions action3_hunspell";;
+        --hunspell) add_actions action3_hunspell;;
         --help) write_help; exit 0;;
         *) echo Unknown option "$1". Aborting; exit -1;;
     esac
@@ -417,7 +415,7 @@ fi
 if test -z "$branches"; then
     branches="emacs-27"
 fi
-actions=`for a in $actions; do echo $a; done|sort`
+actions=`echo $actions | sed 's,[ ],\n,g' | sort | uniq`
 if test -z "$actions"; then
     actions="action0_clone action2_build action3_package_deps action5_package_all"
 fi
