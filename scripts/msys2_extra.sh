@@ -53,7 +53,7 @@ function action3_isync ()
         && msys2_extra_clone \
         && msys2_extra_build_and_install_package isync \
         && emacs_extensions="$isync_zip_file $emacs_extensions" \
-        && msys2_extra_package isync-git "/" "gcc-libs" "$isync_zip_file" "$isync_zip_file"
+        && msys2_extra_package isync-git "/" "gcc-libs ca-certificates" "$isync_zip_file" "$isync_zip_file"
 }
 
 function ensure_msys2_devel ()
@@ -160,7 +160,7 @@ pkgver() {
 build() {
     cd "${srcdir}"/${_realname}
     if grep '^AX_LIB_READLINE' configure.ac; then
-       patch -p1 < ../../mu-readline-patch
+       patch -p1 < ../../mu-readline.patch
     fi
     chmod +x ./autogen.sh
     ./autogen.sh --disable-gtk --disable-webkit --disable-guile --disable-readline
