@@ -205,6 +205,7 @@ function action1_ensure_packages ()
 function action2_build ()
 {
     action1_ensure_packages
+    rm -f "$emacs_install_dir/bin/emacs.exe"
     if prepare_source_dir $emacs_source_dir \
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
         echo Building Emacs in directory $emacs_build_dir
@@ -224,12 +225,17 @@ function action2_build ()
 
 function action2_install ()
 {
-    rm -rf "$emacs_install_dir"
-    mkdir -p "$emacs_install_dir"
-    echo Installing Emacs into directory $emacs_install_dir
-    make -j 4 -C $emacs_build_dir install >>$log_file 2>&1 \
-        && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
-        && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+'
+    if test -f "$emacs_install_dir/bin/emacs.exe"; then
+        echo $emacs_install_dir/bin/emacs.exe exists
+        echo refusing to reinstall
+    else
+        rm -rf "$emacs_install_dir"
+        mkdir -p "$emacs_install_dir"
+        echo Installing Emacs into directory $emacs_install_dir
+        make -j 4 -C $emacs_build_dir install >>$log_file 2>&1 \
+            && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
+            && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+'
+    fi
 }
 
 function action3_package_deps ()
@@ -284,7 +290,7 @@ function action5_package_all ()
                 return -1
             fi
         done
-        find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | xargs strip
+        find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | grep -v msys-[.0-9]*.dll | xargs strip
         find . -type f | sort | dependency_filter | xargs zip -9vr "$emacs_distfile" >> $log_file
     fi
 }
