@@ -116,7 +116,9 @@ function msys2_extra_clone ()
     clone_repo "master" "$msys2_extra_repo" "$msys2_extra_source_dir" \
         && (cd "$msys2_extra_source_dir" && git reset --hard && git checkout . ) \
         && msys2_extra_mu_pkg_description \
-        && msys2_extra_gmime3_pkg_description
+        && msys2_extra_gmime3_pkg_description \
+        && msys2_extra_xapian_pkg_description \
+        && msys2_extra_isync_pkg_description
 
 }
 
@@ -144,8 +146,8 @@ license=('GPL-3.0')
 url="https://www.djcbsoftware.nl/code/mu/"
 # depends=(xapian-core libiconv libguile guile gmp libgc libcrypt)
 # makedepends=(git emacs glib2-devel libiconv-devel libguile-devel gmp-devel libgc-devel libcrypt-devel xapian-core gmime3)
-depends=(glib2 libreadline xapian-core libiconv )
-makedepends=(git emacs glib2-devel libiconv-devel xapian-core gmime3 libreadline-devel)
+depends=(glib2 xapian-core libiconv )
+makedepends=(git glib2-devel libiconv-devel xapian-core gmime3 diffutils)
 source=("git+https://github.com/djcb/mu")
 sha256sums=('SKIP')
 
@@ -157,8 +159,11 @@ pkgver() {
 
 build() {
     cd "${srcdir}"/${_realname}
+    if grep '^AX_LIB_READLINE' configure.ac; then
+       patch -p1 < ../../mu-readline-patch
+    fi
     chmod +x ./autogen.sh
-    ./autogen.sh --disable-gtk --disable-webkit --disable-guile
+    ./autogen.sh --disable-gtk --disable-webkit --disable-guile --disable-readline
     make
 }
 
@@ -168,6 +173,30 @@ package() {
     install -Dm644 COPYING "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
 }
 
+EOF
+    cat > "$msys2_extra_source_dir/mu/mu-readline.patch" <<\EOF
+diff --git a/configure.ac b/configure.ac
+index 9d8ebf2f..cbeb2e19 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -246,10 +246,13 @@ AM_COND_IF([BUILD_GUILE],[AC_DEFINE(BUILD_GUILE,[1], [Do we support Guile?])])
+
+ ###############################################################################
+ # optional readline
+-saved_libs=$LIBS
+-AX_LIB_READLINE
+-AC_SUBST(READLINE_LIBS,${LIBS})
+-LIBS=$saved_libs
++AC_ARG_ENABLE([readline], AS_HELP_STRING([--disable-readline],[Disable readline]))
++AS_IF([test "x$enable_readline" != "xno"], [
++  saved_libs=$LIBS
++  AX_LIB_READLINE
++  AC_SUBST(READLINE_LIBS,${LIBS})
++  LIBS=$saved_libs
++])
+ ###############################################################################
+
+ ###############################################################################
 EOF
 }
 
@@ -217,7 +246,7 @@ EOF
 
 function msys2_extra_xapian_pkg_description ()
 {
-    cat > "$msys2_extra_source_dir/gmime3/PKGBUILD" <<\EOF
+    cat > "$msys2_extra_source_dir/xapian-core/PKGBUILD" <<\EOF
 # Maintainer: damon-kwok <damon-kwok@outlook.com>
 
 pkgname=xapian-core
@@ -250,6 +279,50 @@ build() {
 package() {
     cd ${pkgname}-${pkgver}
     make DESTDIR="${pkgdir}" install
+}
+EOF
+
+}
+
+
+function msys2_extra_isync_pkg_description ()
+{
+    cat > "$msys2_extra_source_dir/isync/PKGBUILD" <<\EOF
+# Maintainer: damon-kwok <damon-kwok@outlook.com>
+
+_realname=isync
+# _date="`date +%Y-%m-%d`"
+pkgname=${_realname}-git #-${_date}
+pkgver=20200804
+pkgrel=1
+pkgdesc="isync is a command line application which synchronizes mailboxes."
+arch=('i686' 'x86_64')
+groups=('net-utils')
+license=('GPL-2.0')
+url="http://isync.sourceforge.net/"
+depends=('openssl' 'libsasl' 'zlib' 'libdb')
+makedepends=('openssl-devel' 'libsasl-devel' 'zlib-devel' 'libdb')
+source=("git+https://git.code.sf.net/p/isync/isync")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}"/${_realname}
+  # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  git log -1 --format="%cd" --date=short | sed 's|-||g'
+}
+
+build() {
+    cd "${srcdir}"/${_realname}
+    chmod +x ./autogen.sh
+    ./autogen.sh
+     ./configure --prefix=/usr
+    make
+}
+
+package() {
+    cd "${srcdir}"/${_realname}
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 COPYING "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
 }
 EOF
 
