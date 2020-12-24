@@ -70,14 +70,20 @@ function full_dependency_list ()
     #  $1 = list of packages without dependencies
     #  $2 = list of packages to skip
     #  $3 = Origin of this list
+    #  $4 = If non-empty, add mingw prefix
     #
     # Packages that have to be replaced by others for distribution
+    local packages="$1"
+    local skip_pkgs="$2"
+    local context="$3"
+    local avoid_prefix="$4"
     local munge_pgks="
-        s,$mingw_prefix-libwinpthread,$mingw_prefix-libwinpthread-git,g;
-        s,$mingw_prefix-libtre,$mingw_prefix-libtre-git,g;"
-
-    local packages=`for p in $1; do echo $mingw_prefix-$p; done`
-    local skip_pkgs=`for p in $2; do echo s,$mingw_prefix-$p,,g; done`
+             s,$mingw_prefix-libwinpthread,$mingw_prefix-libwinpthread-git,g;
+             s,$mingw_prefix-libtre,$mingw_prefix-libtre-git,g;"
+    if test -z "$avoid_prefix"; then
+        packages=`for p in $packages; do echo $mingw_prefix-$p; done`
+        skip_pkgs=`for p in $skip_pkgs; do echo $mingw_prefix-$p; done`
+    fi
     local oldpackages=""
     local dependencies=""
     if "$debug_dependency_list"; then
@@ -87,7 +93,9 @@ function full_dependency_list ()
         while test "$oldpackages" != "$packages" ; do
             oldpackages="$packages"
             for p in $packages; do
-                dependencies=`pacman -Qii $p | grep Depends | sed -e 's,>=[^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g;' -e "$skip_pkgs" -e "$munge_pgks"`
+                dependencies=`pacman -Qii $p | grep Depends | sed -e 's,[>=][^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g' -e "$munge_pgks"`
+                test -n "$skip_pkgs" && \
+                    dependencies=`elements_not_in_list "$dependencies" "$skip_pkgs"`
                 newpackages=`elements_not_in_list "$dependencies" "$packages"`
                 if test -n "$newpackages"; then
                     errcho "Package $p introduces"
@@ -100,7 +108,9 @@ function full_dependency_list ()
     else
         while test "$oldpackages" != "$packages" ; do
             oldpackages="$packages"
-            dependencies=`pacman -Qii $oldpackages | grep Depends | sed -e 's,>=[^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g;' -e "$skip_pkgs" -e "$munge_pgks"`
+            dependencies=`pacman -Qii $oldpackages | grep Depends | sed -e 's,[>=][^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g' -e "$munge_pgks"`
+            test -n "$skip_pkgs" && \
+                dependencies=`elements_not_in_list "$dependencies" "$skip_pkgs"`
             packages=`echo $oldpackages $dependencies | sed -e 's, ,\n,g' | sort | uniq`
         done
     fi
@@ -115,7 +125,7 @@ function ensure_packages ()
         echo All packages are installed.
     else
         echo Some packages are missing. Installing them with pacman.
-        pacman -S --noconfirm -q $packages
+        pacman -S --needed --noconfirm -q $packages
     fi
 }
 
@@ -126,6 +136,7 @@ function package_dependencies ()
     rm -f "$zipfile"
     mkdir -p `dirname "$zipfile"`
     cd $mingw_dir
+    echo Mingw dir $mingw_dir
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
         | sed "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9 $zipfile
 }
