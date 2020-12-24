@@ -84,8 +84,8 @@ function full_dependency_list ()
         packages=`for p in $packages; do echo $mingw_prefix-$p; done`
         skip_pkgs=`for p in $skip_pkgs; do echo $mingw_prefix-$p; done`
     fi
-    local oldpackages=""
-    local dependencies=""
+    local oldpackages
+    local dependencies
     if "$debug_dependency_list"; then
         local dependencies
         local newpackages
@@ -94,16 +94,14 @@ function full_dependency_list ()
             oldpackages="$packages"
             for p in $packages; do
                 dependencies=`pacman -Qii $p | grep Depends | sed -e 's,[>=][^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g' -e "$munge_pgks"`
-                test -n "$skip_pkgs" && \
-                    dependencies=`elements_not_in_list "$dependencies" "$skip_pkgs"`
-                newpackages=`elements_not_in_list "$dependencies" "$packages"`
-                if test -n "$newpackages"; then
+                dependencies=`elements_not_in_list "$dependencies" "$skip_pkgs $packages"`
+                if test -n "$dependencies"; then
                     errcho "Package $p introduces"
-                    for i in $newpackages; do errcho "  $i"; done
-                    packages="$packages $newpackages"
+                    for i in $dependencies; do errcho "  $i"; done
+                    newpackages="$dependencies $newpackages"
                 fi
             done
-            packages=`echo $packages | sed -e 's, ,\n,g' | sort | uniq`
+            packages=`echo $packages $newpackages | sed -e 's, [ ]*,\n,g' | sort | uniq`
         done
     else
         while test "$oldpackages" != "$packages" ; do
