@@ -326,7 +326,7 @@ function dependency_filter () {
     if test -z "$dependency_exclusions"; then
          cat -
     else
-        grep -E -v "^(`echo $slim_exclusions | sed 's, ,|,g'`)" -
+        grep -E -v "^(`echo $slim_exclusions | sed 's,[ \n],|,g'`)" -
     fi
 }
 
@@ -369,6 +369,7 @@ usr/share/doc/xapian-core
 usr/share/gtk-doc/html
 usr/share/man2
 usr/share/man3
+usr/share/man7
 var
 "
 dependency_exclusions=""
