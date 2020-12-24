@@ -31,6 +31,7 @@
 . scripts/tools.sh
 . scripts/pdf-tools.sh
 . scripts/hunspell.sh
+. scripts/msys2_extra.sh
 
 function write_help () {
     cat <<EOF
@@ -113,22 +114,17 @@ function check_mingw_architecture ()
 function ensure_mingw_build_software ()
 {
     local build_packages="base-devel ${mingw_prefix}-toolchain"
-    if pacman -Qi $build_packages; then
-        echo $MSYSTEM build software has been installed
-    else
-        echo Installing basic development software for $MSYSTEM
-        pacman -S --noconfirm --needed $build_packages
-        if test "$?" != 0; then
-            echo Unable to install $build_packages
-            echo Giving up
-            exit -1
-        fi
+    pacman -S --noconfirm --needed $build_packages >/dev/null 2>&1
+    if test "$?" != 0; then
+        echo Unable to install $build_packages
+        echo Giving up
+        exit -1
     fi
     if which git >/dev/null 2>&1; then
         echo Git is already installed
     else
         echo Installing Git for MSYS2
-        pacman -S git
+        pacman -S --noconfirm --needed git
         if test "$?" != 0; then
             echo Unable to install Git
             echo Giving up
@@ -167,7 +163,7 @@ function emacs_configure_build_dir ()
     cd "$emacs_build_dir"
     options="--without-compress-install --without-dbus"
     for f in $all_features; do
-        if echo $features | grep f > /dev/null; then
+        if echo $features | grep $f > /dev/null; then
             options="--with-$f $options"
         else
             options="--without-$f $options"
@@ -280,6 +276,7 @@ function action5_package_all ()
         fi
     done
     if install_emacs; then
+        rm -f "$emacs_distfile"
         cd "$emacs_install_dir"
         for zipfile in "$emacs_depsfile" $emacs_extensions; do
             echo Unzipping $zipfile
@@ -352,13 +349,14 @@ share/doc/tiff
 share/doc/openssl
 share/doc/pcre
 share/doc/sqlite3
+share/doc/xapian-core
 share/doc/xz
 share/gettext/intl
-share/gtk-doc/html/libxml2
+share/gtk-doc/html
 share/man/man3
 share/man/man5
 share/man/mann
-usr
+share/readline
 var
 "
 dependency_exclusions=""
@@ -391,6 +389,8 @@ while test -n "$*"; do
         --pack-emacs) actions="$actions action4_package_emacs";;
         --pack-all) actions="$actions action5_package_all";;
         --pdf-tools) actions="$actions action3_pdf_tools";;
+        --mu) actions="$actions action3_mu";;
+        --isync) actions="$actions action3_isync";;
         --debug-dependencies) debug_dependency_list="true";;
         --hunspell) actions="$actions action3_hunspell";;
         --help) write_help; exit 0;;
