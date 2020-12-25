@@ -23,6 +23,8 @@ different computers, with the following conditions
 
 ## Usage
 
+### General instructions
+
 ````
 Usage:
 
@@ -64,7 +66,7 @@ Extensions:
    --isync       Synchronize email from IMAP/POP to Maildir format (mbsync)
 ````
 
-## What this does
+### An example
 
 Assume you invoke this script as follows
 ````
@@ -87,6 +89,25 @@ The script, just like its creator, is a bit opinionated. It performs takes some 
 - It eliminates the library files (*.a).
 - It strips the executable files and DLL's from debugging information.
 
+
+### Considerations
+
+- Upgrade your MSYS/Mingw installation with `pacman -Su` before running this script.
+- There are implicit dependencies.
+  - `--clone` is required to get the sources
+  - `--deps` is assumed to be run before `--pack-all`
+- Extensions can be built separately from Emacs.
+- Zip files are stored in `./zips`
+  - `emacs-xx-xxxx-deps.zips` is the file with optional libraries (png, jpeg,
+    etc) used by Emacs.
+  - `emacs-xx-xxxx-nodeps.zip` is a bare Emacs installation. It runs even if the
+    'deps' file is not used
+  - `emacs-xx-xxxx-full.zip` is a complete Emacs installation, with the optional
+    libraries and all extensions (pdf-tools, mu, etc) you mentioned in the
+    command line.
+  - `pdf-tools-xxxx.zip` and others are the Zip files for the extensions. They
+    can be unpacked inside an Emacs installation, but may assume that 'deps' have
+    also been unpacked.
 
 ## TO-DO
 
