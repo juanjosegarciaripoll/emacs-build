@@ -23,6 +23,15 @@ different computers, with the following conditions
 
 ## Usage
 
+### Before running
+
+1. Install MSYS/Mingw64 as explained [here](https://www.msys2.org/).
+2. Open a Mingw64 terminal.
+3. Install Git using `pacman -S git`.
+4. Upgrade your system if this is not a fresh install.
+5. Clone this repository somewhere in your home directory.
+6. Enter the repository and use the command line tool as explained below.
+
 ### General instructions
 
 ````
@@ -92,25 +101,33 @@ The script, just like its creator, is a bit opinionated. It performs takes some 
 
 ### Considerations
 
+Regarding versions:
+
 - Upgrade your MSYS/Mingw installation with `pacman -Su` before running this script.
-- There are implicit dependencies.
-  - `--clone` is required to get the sources
-  - `--deps` is assumed to be run before `--pack-all`
-- Zip files are stored in `./zips`
-  - `emacs-xx-xxxx-deps.zips` is the file with optional libraries (png, jpeg,
-    etc) used by Emacs.
-  - `emacs-xx-xxxx-nodeps.zip` is a bare Emacs installation. It runs even if the
-    'deps' file is not used
-  - `emacs-xx-xxxx-full.zip` is a complete Emacs installation, with the optional
-    libraries and all extensions (pdf-tools, mu, etc) you mentioned in the
-    command line.
-  - `pdf-tools-xxxx.zip` and others are the Zip files for the extensions. They
-    can be unpacked inside an Emacs installation, but may assume that 'deps' have
-    also been unpacked.
+- After every upgrade, it is recommended to do a full clean (`--clean-all`) and
+  rebuild. Otherwise different packages may be in an inconsistent state.
 
-Regarding the extensions to Emacs:
+There are implicit dependencies in the various actions:
 
-- Extensions can be built separately from Emacs.
+- `--clone` is required to get the sources
+- `--deps` is assumed to be run before `--pack-all`
+
+The tool produces zip files that are stored in `./zips` and can be uncompressed wherever you want:
+
+- `emacs-xx-xxxx-deps.zips` is the file with optional libraries (png, jpeg,
+  etc) used by Emacs.
+- `emacs-xx-xxxx-nodeps.zip` is a bare Emacs installation. It runs even if the
+  'deps' file is not used
+- `emacs-xx-xxxx-full.zip` is a complete Emacs installation, with the optional
+  libraries and all extensions (pdf-tools, mu, etc) you mentioned in the
+  command line.
+- `pdf-tools-xxxx.zip` and others are the Zip files for the extensions. They
+  can be unpacked inside an Emacs installation, but may assume that 'deps' have
+  also been unpacked.
+
+Regarding the extensions to Emacs and third-party utilities:
+
+- They can be built separately from Emacs.
 - If `c:\emacs` is where you unpacked the full installation, some extensions
   will reside in `c:\emacs\bin` (e.g. pdftools) and some others in
   `c:\emacs\usr\bin` (e.g. mu and mbsync).
