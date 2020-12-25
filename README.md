@@ -96,7 +96,6 @@ The script, just like its creator, is a bit opinionated. It performs takes some 
 - There are implicit dependencies.
   - `--clone` is required to get the sources
   - `--deps` is assumed to be run before `--pack-all`
-- Extensions can be built separately from Emacs.
 - Zip files are stored in `./zips`
   - `emacs-xx-xxxx-deps.zips` is the file with optional libraries (png, jpeg,
     etc) used by Emacs.
@@ -108,6 +107,17 @@ The script, just like its creator, is a bit opinionated. It performs takes some 
   - `pdf-tools-xxxx.zip` and others are the Zip files for the extensions. They
     can be unpacked inside an Emacs installation, but may assume that 'deps' have
     also been unpacked.
+
+Regarding the extensions to Emacs:
+
+- Extensions can be built separately from Emacs.
+- If `c:\emacs` is where you unpacked the full installation, some extensions
+  will reside in `c:\emacs\bin` (e.g. pdftools) and some others in
+  `c:\emacs\usr\bin` (e.g. mu and mbsync).
+- Even though elisp files are provided, it is highly recommended that you
+  install pdf-tools and mu4e from Melpa or other repositories, to properly take
+  care of dependencies from other elisp libraries.
+
 
 ## TO-DO
 
