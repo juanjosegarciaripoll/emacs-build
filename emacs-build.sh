@@ -37,10 +37,10 @@ function write_help () {
     cat <<EOF
 Usage:
 
-   ./emacs-build.sh [-64] [-32] [--branch b]
+   ./emacs-build.sh [--branch b]
                     [--clone] [--build] [--deps] [--pack-emacs] [--pack-all]
                     [--without-X] [--with-X]
-                    [--pdf-tools]
+                    [--pdf-tools] [--hunspell] [--mu] [--isync]
 
 Actions:
 
@@ -51,13 +51,12 @@ Actions:
    --pack-emacs  Package an Emacs previously built with the --build option
    --pack-all    Package an Emacs previously built, with all the Mingw64/32
                  dependencies, as well as all extensions (see Extensions below)
+   --version     Output emacs-build version number
 
    Multiple actions can be selected. The default is to run them all in a logical
    order: clone, build, deps and pack-all.
 
 Emacs options:
-   -64           Prepare or build for Mingw64 (default)
-   -32           Prepare or build for Mingw32
    --branch b    Select branch 'b' for the remaining operations
    --slim        Remove Cairo, SVG and TIFF support for a slimmer build
                  Remove also documentation files and other support files
@@ -72,43 +71,39 @@ Extensions:
 
    --pdf-tools   Build and package PDF-TOOLS
    --hunspell    Include Eli Zaretskii's port of Hunspell
+   --mu          Mail search system and supporting Emacs mu4e libraries
+   --isync       Synchronize email from IMAP/POP to Maildir format (mbsync)
 
 EOF
 
 }
 
+function write_version_number ()
+{
+    echo $emacs_build_version
+    exit 0
+}
+
 function check_mingw_architecture ()
 {
-    if test $architecture = i686; then
-        if test "$MSYSTEM" = MINGW32; then
-            mingw_prefix="mingw-w64-i686"
-            mignw_dir="/mingw32/"
-        else
-            # We should fix this by relaunching the script on a
-            # different environment
-            echo Cannot build 32-bit architecture on a 64-bit MINGW prompt
-            echo
-            exit -1
-        fi
-    elif test "$MSYSTEM" = MINGW64; then
-        mingw_prefix="mingw-w64-x86_64"
-        mingw_dir="/mingw64/"
-    elif test "$MSYSTEM" = MINGW32; then
-        # We should fix this by relaunching the script on a
-        # different environment
-        echo Cannot build a 64-bit architecture on a 32-bit MINGW prompt
-        echo
-        exit -1
-    elif test "$MSYSTEM" = MSYS; then
-        echo This tool cannot be ran from an MSYS shell.
-        echo Please open a Mingw64 or Mingw32 terminal.
-        echo
-        exit -1
-    else
-        echo This tool must be run from a Mingw64/32 system
-        echo
-        exit -1
-    fi
+    case "$MSYSTEM" in
+        MINGW32) architecture=i686
+                 mingw_prefix="mingw-w64-i686"
+                 mignw_dir="/mingw32/"
+                 ;;
+        MINGW64) architecture=x86_64
+                 mingw_prefix="mingw-w64-x86_64"
+                 mingw_dir="/mingw64/"
+                 ;;
+        MSYSTEM) echo This tool cannot be ran from an MSYS shell.
+                 echo Please open a Mingw64 or Mingw32 terminal.
+                 echo
+                 exit -1
+                 ;;
+        *)       echo This tool must be run from a Mingw64/32 system
+                 echo
+                 exit -1
+    esac
 }
 
 function ensure_mingw_build_software ()
@@ -380,14 +375,12 @@ dependency_exclusions=""
 all_features=`feature_list | cut -f 1 -d ' '`
 features="$all_features"
 branches=""
-architectures=""
 actions=""
 do_clean=""
 debug_dependency_list="false"
+emacs_build_version=0.1
 while test -n "$*"; do
     case $1 in
-        -64) architectures="$architectures x86_64";;
-        -32) architectures="$architectures i686";;
         --branch) shift; branches="$branches $1";;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
@@ -405,6 +398,7 @@ while test -n "$*"; do
         --deps) add_actions action3_package_deps;;
         --pack-emacs) add_actions action2_install action4_package_emacs;;
         --pack-all) add_actions action2_install action5_package_all;;
+        --version) write_version_number;;
         --pdf-tools) add_actions action2_install action3_pdf_tools;;
         --mu) add_actions action2_install action3_mu;;
         --isync) add_actions action3_isync;;
@@ -415,9 +409,6 @@ while test -n "$*"; do
     esac
     shift
 done
-if test -z $architectures; then
-    architectures="x86_64"
-fi
 if test -z "$branches"; then
     branches="emacs-27"
 fi
@@ -433,27 +424,25 @@ emacs_build_git_dir="$emacs_build_root/git"
 emacs_build_build_dir="$emacs_build_root/build"
 emacs_build_install_dir="$emacs_build_root/pkg"
 emacs_build_zip_dir="$emacs_build_root/zips"
-for architecture in $architectures; do
-    check_mingw_architecture
-    ensure_mingw_build_software
-    for branch in $branches; do
-        emacs_extensions=""
-        emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
-        emacs_depsfile="`pwd`/zips/emacs-${branch}-${architecture}-deps.zip"
-        emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
-        emacs_dependencies=""
-        for action in $actions; do
-            emacs_source_dir="$emacs_build_git_dir/$branch"
-            emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
-            emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
-            log_file="${emacs_build_dir}.log"
-            if $action ; then
-                echo Action $action succeeded.
-            else
-                echo Action $action failed.
-                echo Aborting builds for branch $branch and architecture $architecture
-                break
-            fi
-        done
+check_mingw_architecture
+ensure_mingw_build_software
+for branch in $branches; do
+    emacs_extensions=""
+    emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
+    emacs_depsfile="`pwd`/zips/emacs-${branch}-${architecture}-deps.zip"
+    emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
+    emacs_dependencies=""
+    for action in $actions; do
+        emacs_source_dir="$emacs_build_git_dir/$branch"
+        emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
+        emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
+        log_file="${emacs_build_dir}.log"
+        if $action ; then
+            echo Action $action succeeded.
+        else
+            echo Action $action failed.
+            echo Aborting builds for branch $branch and architecture $architecture
+            break
+        fi
     done
 done
