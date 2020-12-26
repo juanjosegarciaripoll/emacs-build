@@ -199,7 +199,6 @@ function action1_ensure_packages ()
 
 function action2_build ()
 {
-    action1_ensure_packages
     rm -f "$emacs_install_dir/bin/emacs.exe"
     if prepare_source_dir $emacs_source_dir \
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
@@ -394,8 +393,8 @@ while test -n "$*"; do
         --clone) add_actions action0_clone;;
         --debug) set -x;;
         --ensure) add_actions action1_ensure_packages;;
-        --build) add_actions action2_build;;
-        --deps) add_actions action3_package_deps;;
+        --build) add_actions action1_ensure_packages action2_build;;
+        --deps) add_actions action1_ensure_packages action3_package_deps;;
         --pack-emacs) add_actions action2_install action4_package_emacs;;
         --pack-all) add_actions action2_install action5_package_all;;
         --version) write_version_number;;
@@ -414,7 +413,7 @@ if test -z "$branches"; then
 fi
 actions=`echo $actions | sed 's,[ ],\n,g' | sort | uniq`
 if test -z "$actions"; then
-    actions="action0_clone action2_build action3_package_deps action5_package_all"
+    actions="action0_clone action1_ensure_packages action2_build action3_package_deps action5_package_all"
 fi
 features=`for f in $features; do echo $f; done | sort | uniq`
 
