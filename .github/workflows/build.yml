@@ -50,7 +50,9 @@ jobs:
 
       # Build only emacs
       - name: Build emacs
-        run: ./emacs-build.sh --clone --deps --build --pack-emacs >zips/emacs-build.log 2>&1
+        run: |
+          mkdir zips
+          ./emacs-build.sh --clone --deps --build --pack-emacs >zips/emacs-build.log 2>&1
 
       # Runs a complete build with all options
       #- name: Complete build
