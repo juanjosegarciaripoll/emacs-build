@@ -204,13 +204,7 @@ function action2_build ()
     if prepare_source_dir $emacs_source_dir \
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
         echo Building Emacs in directory $emacs_build_dir
-        if make -j 4 -C $emacs_build_dir; then
-            echo Installing Emacs into directory $emacs_install_dir
-            if make -j 4 -C $emacs_build_dir install; then
-                echo Process succeeded
-                return 0
-            fi
-        fi
+        make -j 4 -C $emacs_build_dir && return 0
     fi
     echo Configuration and build process failed
     return -1
@@ -248,13 +242,20 @@ function action4_package_emacs ()
         echo Missing dependency file $emacs_depsfile. Run with --deps first.
         return -1
     fi
-    rm -f "$emacs_nodepsfile"
+    rm -f "$emacs_nodepsfile" "$emacs_srcfile"
     mkdir -p `dirname "$emacs_nodepsfile"`
     cd "$emacs_install_dir"
     if zip -9vr "$emacs_nodepsfile" *; then
         echo Built $emacs_nodepsfile; echo
     else
         echo Failed to compress distribution file $emacs_nodepsfile; echo
+        return -1
+    fi
+    cd "$emacs_source_dir"
+    if zip -x '.git/*' -9vr "$emacs_srcfile" *; then
+        echo Built source package $emacs_srcfile
+    else
+        echo Failed to compress sources $emacs_srcfile; echo
         return -1
     fi
 }
@@ -430,6 +431,7 @@ for branch in $branches; do
     emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
     emacs_depsfile="`pwd`/zips/emacs-${branch}-${architecture}-deps.zip"
     emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
+    emacs_srcfile="`pwd`/zips/emacs-${branch}-src.zip"
     emacs_dependencies=""
     for action in $actions; do
         emacs_source_dir="$emacs_build_git_dir/$branch"
