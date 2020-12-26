@@ -25,7 +25,11 @@ jobs:
     # https://github.com/msys2/MINGW-packages/blob/master/.github/workflows/main.yml
     strategy:
       matrix:
-        include: [{ msystem: MINGW64, arch: x86_64}]
+        include: [{ msystem: MINGW64, arch: x86_64}] 
+        
+    defaults: 
+      run:
+        shell: cmd
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
