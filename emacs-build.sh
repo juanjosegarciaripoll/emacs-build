@@ -166,7 +166,7 @@ function emacs_configure_build_dir ()
     done
     echo Configuring Emacs with options
     echo   $options
-    if "$emacs_source_dir/configure" "--prefix=$emacs_install_dir" $options >$log_file 2>&1; then
+    if "$emacs_source_dir/configure" "--prefix=$emacs_install_dir" $options; then
         echo Emacs configured
     else
         echo Configuration failed
@@ -204,17 +204,15 @@ function action2_build ()
     if prepare_source_dir $emacs_source_dir \
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
         echo Building Emacs in directory $emacs_build_dir
-        echo Log file is saved into $log_file
-        if make -j 4 -C $emacs_build_dir >>$log_file 2>&1; then
+        if make -j 4 -C $emacs_build_dir; then
             echo Installing Emacs into directory $emacs_install_dir
-            if make -j 4 -C $emacs_build_dir install >>$log_file 2>&1; then
+            if make -j 4 -C $emacs_build_dir install; then
                 echo Process succeeded
                 return 0
             fi
         fi
     fi
     echo Configuration and build process failed
-    echo Please check log file $log_file
     return -1
 }
 
@@ -227,7 +225,7 @@ function action2_install ()
         rm -rf "$emacs_install_dir"
         mkdir -p "$emacs_install_dir"
         echo Installing Emacs into directory $emacs_install_dir
-        make -j 4 -C $emacs_build_dir install >>$log_file 2>&1 \
+        make -j 4 -C $emacs_build_dir install \
             && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
             && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+'
     fi
@@ -278,7 +276,7 @@ function action5_package_all ()
         cd "$emacs_full_install_dir"
         for zipfile in "$emacs_depsfile" $emacs_extensions; do
             echo Unzipping $zipfile
-            if unzip -ox $zipfile >> $log_file; then
+            if unzip -ox $zipfile; then
                 echo Done!;
             else
                 echo Failed to unzip $zipfile
@@ -286,7 +284,7 @@ function action5_package_all ()
             fi
         done
         find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | grep -v msys-[.0-9]*.dll | xargs strip
-        find . -type f | sort | dependency_filter | xargs zip -9vr "$emacs_distfile" >> $log_file
+        find . -type f | sort | dependency_filter | xargs zip -9vr "$emacs_distfile"
     fi
 }
 
@@ -436,7 +434,6 @@ for branch in $branches; do
         emacs_source_dir="$emacs_build_git_dir/$branch"
         emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
         emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
-        log_file="${emacs_build_dir}.log"
         if $action ; then
             echo Action $action succeeded.
         else

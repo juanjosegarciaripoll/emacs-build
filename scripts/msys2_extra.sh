@@ -29,7 +29,6 @@ function msys2_extra_environment ()
 {
     msys2_extra_repo="https://github.com/msys2-unofficial/MSYS2-packages.git"
     msys2_extra_source_dir="$emacs_build_git_dir/MSYS2-packages"
-    msys2_extra_log_file="$msys2_extra_source_dir/emacs-build.log"
 }
 
 function action3_mu ()
@@ -77,7 +76,6 @@ function msys2_extra_build_and_install_package ()
     #set -x
     local package_name="$1"
     local package_dir="$msys2_extra_source_dir/$package_name"
-    local log_file="$package_dir/emacs-build.log"
     local package_file=`ls "${package_dir}/"*.zst 2>/dev/null`
     if test ! -f "$package_file"; then
         echo Building package $package_dir on directory $package_dir
