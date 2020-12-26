@@ -205,9 +205,9 @@ function action2_build ()
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
         echo Building Emacs in directory $emacs_build_dir
         echo Log file is saved into $log_file
-        if make -j 4 -C $emacs_build_dir >>$log_file 2>&1; then
+        if make -C $emacs_build_dir >>$log_file 2>&1; then
             echo Installing Emacs into directory $emacs_install_dir
-            if make -j 4 -C $emacs_build_dir install >>$log_file 2>&1; then
+            if make -C $emacs_build_dir install >>$log_file 2>&1; then
                 echo Process succeeded
                 return 0
             fi
