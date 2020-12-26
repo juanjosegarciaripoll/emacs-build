@@ -40,8 +40,12 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msystem }}
+          release: true
           install: base-devel git mingw-w64-${{ matrix.arch }}-toolchain
           update: true
+        
+      - name: See free space
+        run: powershell -Command Get-PSDrive
 
       # Runs a single command using the runners shell
       - name: Show we can write text
@@ -49,19 +53,28 @@ jobs:
 
       # Clone emacs
       - name: Clone emacs
-        run: msys2 -c './emacs-build.sh --debug --clone 2>&1'
+        run: msys2 -c './emacs-build.sh --clone 2>&1'
+        
+      - name: See free space
+        run: powershell -Command Get-PSDrive
         
       # Collect dependencies
       - name: Collect dependencies
-        run: msys2 -c './emacs-build.sh --debug --deps 2>&1'
+        run: msys2 -c './emacs-build.sh --deps 2>&1'
+        
+      - name: See free space
+        run: powershell -Command Get-PSDrive
         
       # Build only emacs
       - name: Build emacs
-        run: msys2 -c './emacs-build.sh --debug --build 2>&1'
+        run: msys2 -c './emacs-build.sh --build 2>&1'
+        
+      - name: See free space
+        run: powershell -Command Get-PSDrive
 
       # Pack only emacs
       - name: Pack emacs
-        run: msys2 -c './emacs-build.sh --debug --pack-emacs 2>&1'
+        run: msys2 -c './emacs-build.sh --pack-emacs 2>&1'
 
       # Upload everything
       - name: Upload binaries
