@@ -435,7 +435,7 @@ for branch in $branches; do
         emacs_source_dir="$emacs_build_git_dir/$branch"
         emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
         emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
-        if $action ; then
+        if $action 2>&1 ; then
             echo Action $action succeeded.
         else
             echo Action $action failed.
