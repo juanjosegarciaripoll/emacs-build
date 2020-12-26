@@ -45,23 +45,23 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Show we can write text
-        run: echo Hello, world!
+        run: msys2 -c './emacs-build.sh --help'
 
       # Clone emacs
       - name: Clone emacs
-        run: msys2 -c './emacs-build.sh --debug --clone' 2>&1
+        run: msys2 -c './emacs-build.sh --debug --clone 2>&1'
         
       # Collect dependencies
       - name: Collect dependencies
-        run: msys2 -c './emacs-build.sh --debug --deps' 2>&1
+        run: msys2 -c './emacs-build.sh --debug --deps 2>&1'
         
       # Build only emacs
       - name: Build emacs
-        run: msys2 -c './emacs-build.sh --debug --build' 2>&1
+        run: msys2 -c './emacs-build.sh --debug --build 2>&1'
 
       # Pack only emacs
       - name: Pack emacs
-        run: msys2 -c './emacs-build.sh --debug --pack-emacs' 2>&1
+        run: msys2 -c './emacs-build.sh --debug --pack-emacs 2>&1'
 
       # Upload everything
       - name: Upload binaries
