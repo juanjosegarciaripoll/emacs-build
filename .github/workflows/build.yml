@@ -27,12 +27,6 @@ jobs:
       matrix:
         include: [{ msystem: MINGW64, arch: x86_64}]
 
-    # Use the msys2.cmd wrapper to run all commands. This command invokes
-    # a bash environment with the right msystem.
-    defaults:
-      run:
-        shell: msys2 {0}
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -50,13 +44,7 @@ jobs:
 
       # Build only emacs
       - name: Build emacs
-        run: |
-          mkdir zips
-          ./emacs-build.sh --clone --deps --build --pack-emacs # >zips/emacs-build.log 2>&1
-
-      # Runs a complete build with all options
-      #- name: Complete build
-      #  run: ./emacs-build.sh --clone --deps --pdf-tools --hunspell --mu --isync --build --pack-emacs --pack-all >zips/emacs-build.log 2>&1
+        run: msys2 -c './emacs-build.sh --clone --deps --build --pack-emacs' 2>&1
 
       # Upload everything
       - name: Upload binaries
