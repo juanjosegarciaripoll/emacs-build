@@ -2,15 +2,11 @@
 
 name: build
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   # JJGR: Change back to main from cicd
   push:
-    branches: [ cicd ]
-  pull_request:
-    branches: [ cicd ]
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -20,14 +16,14 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: windows-latest
-    
+
     # Matrix strategy from
     # https://github.com/msys2/MINGW-packages/blob/master/.github/workflows/main.yml
     strategy:
       matrix:
-        include: [{ msystem: MINGW64, arch: x86_64}] 
-        
-    defaults: 
+        include: [{ msystem: MINGW64, arch: x86_64}]
+
+    defaults:
       run:
         shell: cmd
 
@@ -43,7 +39,7 @@ jobs:
           release: true
           install: base-devel git mingw-w64-${{ matrix.arch }}-toolchain
           update: true
-        
+
       - name: See free space
         run: powershell -Command Get-PSDrive
 
@@ -54,21 +50,21 @@ jobs:
       # Clone emacs
       - name: Clone emacs
         run: msys2 -c './emacs-build.sh --clone 2>&1'
-        
+
       - name: See free space
         run: powershell -Command Get-PSDrive
-        
+
       # Collect dependencies
       - name: Collect dependencies
         run: msys2 -c './emacs-build.sh --deps 2>&1'
-        
+
       - name: See free space
         run: powershell -Command Get-PSDrive
-        
+
       # Build only emacs
       - name: Build emacs
         run: msys2 -c './emacs-build.sh --build 2>&1'
-        
+
       - name: See free space
         run: powershell -Command Get-PSDrive
 
@@ -82,4 +78,3 @@ jobs:
         with:
           name: ${{ matrix.msystem }}-packages
           path: zips/*
-        
