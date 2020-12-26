@@ -43,6 +43,13 @@ jobs:
       - name: See free space
         run: powershell -Command Get-PSDrive
 
+      # Collect dependencies
+      - name: Collect dependencies
+        run: msys2 -c './emacs-build.sh --debug --deps 2>&1'
+
+      - name: See free space
+        run: powershell -Command Get-PSDrive
+
       # Runs a single command using the runners shell
       - name: Show we can write text
         run: msys2 -c './emacs-build.sh --help'
@@ -50,13 +57,6 @@ jobs:
       # Clone emacs
       - name: Clone emacs
         run: msys2 -c './emacs-build.sh --clone 2>&1'
-
-      - name: See free space
-        run: powershell -Command Get-PSDrive
-
-      # Collect dependencies
-      - name: Collect dependencies
-        run: msys2 -c './emacs-build.sh --deps 2>&1'
 
       - name: See free space
         run: powershell -Command Get-PSDrive
