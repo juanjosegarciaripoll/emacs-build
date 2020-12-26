@@ -36,7 +36,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msystem }}
-          install: base-devel git mingw-w64-${{
+          install: base-devel git mingw-w64-${{ matrix.arch }}-toolchain
           update: true
 
       # Runs a single command using the runners shell
