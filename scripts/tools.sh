@@ -32,7 +32,7 @@ function clone_repo ()
         echo Found git, nothing to install.
     else
         echo Git is not found, installing it.
-        pacman -S --noconfirm git
+        pacman -S --noconfirm --needed git
     fi
     pushd . >/dev/null
     local error
@@ -135,6 +135,11 @@ function package_dependencies ()
     mkdir -p `dirname "$zipfile"`
     cd $mingw_dir
     echo Mingw dir $mingw_dir
+    pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
+        | sed "s,^$mingw_dir,,g"
+    echo Packing
+    pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq
+    echo Packing
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
         | sed "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9 $zipfile
 }
