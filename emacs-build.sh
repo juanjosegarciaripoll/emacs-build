@@ -393,6 +393,7 @@ while test -n "$*"; do
         --clean) add_actions action0_clean;;
         --clean-all) add_actions action0_clean action0_clean_rest;;
         --clone) add_actions action0_clone;;
+        --debug) set -x;;
         --ensure) add_actions action1_ensure_packages;;
         --build) add_actions action2_build;;
         --deps) add_actions action3_package_deps;;
