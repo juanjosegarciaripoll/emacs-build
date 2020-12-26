@@ -89,11 +89,11 @@ function check_mingw_architecture ()
     case "$MSYSTEM" in
         MINGW32) architecture=i686
                  mingw_prefix="mingw-w64-i686"
-                 mignw_dir="/mingw32/"
+                 mignw_dir="$MINGW_MOUNT_POINT/"
                  ;;
         MINGW64) architecture=x86_64
                  mingw_prefix="mingw-w64-x86_64"
-                 mingw_dir="/mingw64/"
+                 mingw_dir="$MINGW_MOUNT_POINT/"
                  ;;
         MSYSTEM) echo This tool cannot be ran from an MSYS shell.
                  echo Please open a Mingw64 or Mingw32 terminal.
