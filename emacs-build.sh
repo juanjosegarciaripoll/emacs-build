@@ -156,7 +156,7 @@ function emacs_dependencies ()
 function emacs_configure_build_dir ()
 {
     cd "$emacs_build_dir"
-    options="--without-compress-install --without-dbus"
+    options="--disable-build-details --without-compress-install --without-dbus"
     for f in $all_features; do
         if echo $features | grep $f > /dev/null; then
             options="--with-$f $options"
