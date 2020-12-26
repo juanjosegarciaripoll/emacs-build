@@ -442,7 +442,7 @@ for branch in $branches; do
         else
             echo Action $action failed.
             echo Aborting builds for branch $branch and architecture $architecture
-            break
+            exit -1
         fi
     done
 done
