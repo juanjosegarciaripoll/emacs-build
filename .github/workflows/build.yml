@@ -42,15 +42,24 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msystem }}
-          install: git base-devel msys2-devel
           update: true
 
       # Runs a single command using the runners shell
       - name: Show we can write text
         run: echo Hello, world!
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          ./emacs-build.sh --help
+      # Build only emacs
+      - name: Build emacs
+        run: ./emacs-build.sh --clone --deps --build --pack-emacs >zips/emacs-build.log 2>&1
+
+      # Runs a complete build with all options
+      #- name: Complete build
+      #  run: ./emacs-build.sh --clone --deps --pdf-tools --hunspell --mu --isync --build --pack-emacs --pack-all >zips/emacs-build.log 2>&1
+
+      # Upload everything
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.msystem }}-packages
+          path: zips/*
+        
