@@ -53,8 +53,7 @@ jobs:
         run: msys2 -c './emacs-build.sh --debug --clone 2>&1'
         
       - name: See free space
-        run: Get-PSDrive
-          shell: powershell
+        run: powershell -Command Get-PSDrive
         
       # Collect dependencies
       - name: Collect dependencies
