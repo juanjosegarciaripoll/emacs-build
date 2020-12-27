@@ -417,6 +417,8 @@ if test -z "$actions"; then
 fi
 features=`for f in $features; do echo $f; done | sort | uniq`
 
+# This is needed for pacman to return the right text
+export LANG=C
 emacs_repo=https://git.savannah.gnu.org/git/emacs.git
 emacs_build_root=`pwd`
 emacs_build_git_dir="$emacs_build_root/git"
