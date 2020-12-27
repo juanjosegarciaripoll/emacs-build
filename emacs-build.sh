@@ -396,7 +396,7 @@ while test -n "$*"; do
         --build) add_actions action1_ensure_packages action2_build;;
         --deps) add_actions action1_ensure_packages action3_package_deps;;
         --pack-emacs) add_actions action2_install action4_package_emacs;;
-        --pack-all) add_actions action2_install action5_package_all;;
+        --pack-all) add_actions action1_ensure_packages action3_package_deps action2_install action5_package_all;;
         --version) write_version_number;;
         --pdf-tools) add_actions action2_install action3_pdf_tools;;
         --mu) add_actions action2_install action3_mu;;

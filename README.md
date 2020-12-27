@@ -74,7 +74,7 @@ Extensions:
 
 Assume you invoke this script as follows
 ````
-./emacs-build.cmd --slim --clone --build --pdf-tools --hunspell --mu --isync --pack-all
+./emacs-build.cmd --slim --clone --deps --build --pdf-tools --hunspell --mu --isync --pack-all
 ````
 
 It will take care of the following tasks
