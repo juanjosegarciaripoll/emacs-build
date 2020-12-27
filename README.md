@@ -101,7 +101,9 @@ The script, just like its creator, is a bit opinionated. It performs takes some 
 There are implicit dependencies in the various actions:
 
 - `--clone` is required to get the sources
-- `--deps` is assumed to be run before `--pack-all`
+- `--build` is assumed to be run before `--pack-all` or `--pack-emacs`
+
+Note that `--clean` or `--clean-all` do not remove the `msys64` directory, because it is very time consuming to create and update it.
 
 The tool produces zip files that are stored in `./zips` and can be uncompressed wherever you want:
 
