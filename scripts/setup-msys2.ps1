@@ -43,5 +43,5 @@ if ( !(Test-Path ${msys2_dir}\msys2_shell.cmd) ) {
     .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -Syuu'
     # Install packages required by emacs-build
     echo "Install essential packages"
-    .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -S git zip base-devel mingw-w64-x86_64-toolchain'
+    .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -S git unzip zip base-devel mingw-w64-x86_64-toolchain'
 }
