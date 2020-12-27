@@ -136,7 +136,7 @@ function package_dependencies ()
     cd $mingw_dir
     echo Mingw dir $mingw_dir
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
-        | grep "^$mingw_dir" | sed -e "s,^$mingw_dir,,g" | xargs ls
+        | grep "^$mingw_dir" | sed -e "s,^$mingw_dir,,g" | dependency_filter | xargs tar -c --verbose -f - > /dev/null
     echo Packing
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
         | grep "^$mingw_dir" | sed -e "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9v $zipfile
