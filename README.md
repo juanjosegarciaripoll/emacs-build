@@ -32,7 +32,7 @@ The script supports two way of being invoked:
 ````
 Usage:
 
-   ./emacs-build.cmd [--branch b]
+   .\emacs-build.cmd [--branch b]
                      [--clone] [--build] [--deps] [--pack-emacs] [--pack-all]
                      [--without-X] [--with-X]
                      [--pdf-tools] [--hunspell] [--mu] [--isync]
@@ -74,7 +74,7 @@ Extensions:
 
 Assume you invoke this script as follows
 ````
-./emacs-build.cmd --slim --clone --deps --build --pdf-tools --hunspell --mu --isync --pack-all
+.\emacs-build.cmd --slim --clone --deps --build --pdf-tools --hunspell --mu --isync --pack-all
 ````
 
 It will take care of the following tasks
