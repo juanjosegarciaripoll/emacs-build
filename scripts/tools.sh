@@ -136,12 +136,12 @@ function package_dependencies ()
     cd $mingw_dir
     echo Mingw dir $mingw_dir
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
-        | sed "s,^$mingw_dir,,g"
+        | sed -e "s,^$mingw_dir,,g"
     echo Packing
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq
     echo Packing
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
-        | sed "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9 $zipfile
+        | sed -e "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9 $zipfile
 }
 
 function prepare_source_dir ()

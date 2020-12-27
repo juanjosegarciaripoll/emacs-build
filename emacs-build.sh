@@ -86,6 +86,9 @@ function write_version_number ()
 
 function check_mingw_architecture ()
 {
+    set
+    ls -l /
+    ls -l /mingw64
     case "$MSYSTEM" in
         MINGW32) architecture=i686
                  mingw_prefix="mingw-w64-i686"
