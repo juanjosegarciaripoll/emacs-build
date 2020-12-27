@@ -24,19 +24,24 @@ if ( !(Test-Path ${msys2_dir}\msys2_shell.cmd) ) {
     }
     echo "Emacs build root: $emacs_build_dir"
     cd "${emacs_build_dir}"
+    echo "Unpack MSYS2"
     & ${installer} -y
 
     # Reduce time required to install packages by disabling pacman's disk space checking
     .\scripts\msys2.cmd -c 'sed -i "s/^CheckSpace/#CheckSpace/g" /etc/pacman.conf'
     # Force update packages
-    .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -Syuu --overwrite "\\*"'
+    echo "First forced update"
+    .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -Syuu'
     # We have changed /etc/pacman.conf above which means on a pacman upgrade
     # pacman.conf will be installed as pacman.conf.pacnew
-    .\scripts\msys2.cmd -c 'mv -f /etc/pacman.conf.pacnew /etc/pacman.conf'
+    #.\scripts\msys2.cmd -c 'mv -f /etc/pacman.conf.pacnew /etc/pacman.conf'
+    .\scripts\msys2.cmd -c 'sed -i "s/^CheckSpace/#CheckSpace/g" /etc/pacman.conf'
     # Kill remaining tasks
-    taskkill /f /fi 'modules eq msys-2.0.dll'
+    taskkill /f /fi 'MODULES EQ msys-2.0.dll'
     # Final upgrade
-    .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -Syuu --overwrite "\\*"'
+    echo "Final upgrade"
+    .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -Syuu'
     # Install packages required by emacs-build
+    echo "Install essential packages"
     .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -S git zip base-devel mingw-w64-x86_64-toolchain'
 }
