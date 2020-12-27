@@ -376,7 +376,7 @@ branches=""
 actions=""
 do_clean=""
 debug_dependency_list="false"
-emacs_build_version=0.1
+emacs_build_version=0.2
 while test -n "$*"; do
     case $1 in
         --branch) shift; branches="$branches $1";;
