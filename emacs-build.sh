@@ -287,7 +287,7 @@ function action5_package_all ()
             fi
         done
         find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | grep -v msys-[.0-9]*.dll | xargs strip
-        find . -type f | sort | dependency_filter | xargs zip -9vr "$emacs_distfile"
+        find . -type f | sort | dependency_filter | xargs zip -9v "$emacs_distfile"
     fi
 }
 
@@ -324,7 +324,7 @@ function add_actions () {
 
 function dependency_filter () {
     if test -z "$dependency_exclusions"; then
-         cat -
+        cat -
     else
         grep -E -v "^(`echo $slim_exclusions | sed 's,[ \n],|,g'`)" -
     fi
