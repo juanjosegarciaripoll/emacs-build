@@ -115,7 +115,7 @@ function msys2_extra_package ()
 function msys2_extra_clone ()
 {
     echo Cloning repository $msys2_extra_repo
-    echo clone_repo "master" "$msys2_extra_repo" "$msys2_extra_source_dir" \
+    clone_repo "master" "$msys2_extra_repo" "$msys2_extra_source_dir" \
         && (cd "$msys2_extra_source_dir" && git reset --hard && git checkout . ) \
         && msys2_extra_mu_pkg_description \
         && msys2_extra_gmime3_pkg_description \
