@@ -31,6 +31,7 @@
 . scripts/tools.sh
 . scripts/pdf-tools.sh
 . scripts/hunspell.sh
+. scripts/gzip.sh
 . scripts/msys2_extra.sh
 
 function write_help () {
@@ -156,7 +157,10 @@ function emacs_dependencies ()
 function emacs_configure_build_dir ()
 {
     cd "$emacs_build_dir"
-    options="--disable-build-details --disable-silent-rules --without-compress-install --without-dbus"
+    options="--disable-build-details --disable-silent-rules --without-dbus"
+    if test "$emacs_compress_files" = "no"; then
+        $options="$options --without-compress-install"
+    fi
     for f in $all_features; do
         if echo $features | grep $f > /dev/null; then
             options="--with-$f $options"
@@ -217,6 +221,11 @@ function action2_install ()
     else
         rm -rf "$emacs_install_dir"
         mkdir -p "$emacs_install_dir"
+        if test "$emacs_compress_files" = "yes"; then
+            # If we compress files we need to install gzip no matter what
+            # (even in pack-emacs)
+            (action3_gzip && cd "$emacs_install_dir" && unzip "$gzip_zip_file") || return -1
+        fi
         echo Installing Emacs into directory $emacs_install_dir
         # HACK!!! Somehow libgmp is not installed as part of the
         # standalone Emacs build process. This is weird, but means
@@ -224,7 +233,11 @@ function action2_install ()
         make -j 4 -C $emacs_build_dir install \
             && cp "${mingw_dir}bin/libgmp"*.dll "$emacs_install_dir/bin/" \
             && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
-            && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+'
+            && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+' \
+            && cp "$emacs_build_root/scripts/site-start.el" "$emacs_install_dir/share/emacs/site-lisp" \
+            && mkdir -p "$emacs_install_dir/usr/share/emacs/site-lisp/" \
+            && cp "$emacs_install_dir/share/emacs/site-lisp/subdirs.el" \
+                  "$emacs_install_dir/usr/share/emacs/site-lisp/subdirs.el"
     fi
 }
 
@@ -386,6 +399,7 @@ branches=""
 actions=""
 do_clean=""
 debug_dependency_list="false"
+emacs_compress_files=no
 emacs_build_version=0.2
 while test -n "$*"; do
     case $1 in
@@ -397,6 +411,7 @@ while test -n "$*"; do
             delete_feature rsvg
             delete_feature tiff
             dependency_exclusions="$slim_exclusions"
+            emacs_compress_files=yes
             ;;
         --clean) add_actions action0_clean;;
         --clean-all) add_actions action0_clean action0_clean_rest;;
@@ -409,6 +424,7 @@ while test -n "$*"; do
         --pack-all) add_actions action1_ensure_packages action3_package_deps action2_install action5_package_all;;
         --version) write_version_number;;
         --pdf-tools) add_actions action2_install action3_pdf_tools;;
+        --compress) emacs_compress_files=yes;;
         --mu) add_actions action2_install action3_mu;;
         --isync) add_actions action3_isync;;
         --debug-dependencies) debug_dependency_list="true";;
@@ -420,6 +436,9 @@ while test -n "$*"; do
 done
 if test -z "$branches"; then
     branches="emacs-27"
+fi
+if test "$emacs_compress_files" = yes; then
+    add_actions action3_gzip
 fi
 actions=`echo $actions | sed 's,[ ],\n,g' | sort | uniq`
 if test -z "$actions"; then
