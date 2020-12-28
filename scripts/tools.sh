@@ -119,7 +119,7 @@ function ensure_packages ()
 {
     local packages=$@
     echo Ensuring packages are installed
-    if pacman -Qi $packages >/dev/null; then
+    if pacman -Qi $packages >/dev/null 2>&1; then
         echo All packages are installed.
     else
         echo Some packages are missing. Installing them with pacman.
