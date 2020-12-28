@@ -127,5 +127,5 @@ function pdf_tools_package ()
 {
     package_dependencies "$pdf_tools_zip_file" "`pdf_tools_dependencies`" \
         && cd "$pdf_tools_install_dir" \
-        && zip -9r "$pdf_tools_zip_file" * >> "$pdf_tools_log_file" 2>&1
+        && zip -9r "$pdf_tools_zip_file" * 2>&1
 }
