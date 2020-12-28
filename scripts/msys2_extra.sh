@@ -68,7 +68,7 @@ function ensure_msys2_devel ()
 
 function msys2_makepkg ()
 {
-    $SHELL -c "source shell msys; makepkg $*"
+    $SHELL -c "source shell msys; makepkg $* EMACS=$emacs_install_dir/bin/emacs.exe"
 }
 
 function msys2_extra_build_and_install_package ()
@@ -77,6 +77,10 @@ function msys2_extra_build_and_install_package ()
     local package_name="$1"
     local package_dir="$msys2_extra_source_dir/$package_name"
     local package_file=`ls "${package_dir}/"*.zst 2>/dev/null`
+    if test ! -f "$emacs_install_dir/bin/emacs.exe"; then
+        echo Please build and package Emacs before the extensions
+        exit -1
+    fi
     if test ! -f "$package_file"; then
         echo Building package $package_dir on directory $package_dir
         (cd "$package_dir" && rm -f *.zst && msys2_makepkg --noconfirm -rsf -p PKGBUILD)
@@ -111,7 +115,7 @@ function msys2_extra_package ()
 function msys2_extra_clone ()
 {
     echo Cloning repository $msys2_extra_repo
-    clone_repo "master" "$msys2_extra_repo" "$msys2_extra_source_dir" \
+    echo clone_repo "master" "$msys2_extra_repo" "$msys2_extra_source_dir" \
         && (cd "$msys2_extra_source_dir" && git reset --hard && git checkout . ) \
         && msys2_extra_mu_pkg_description \
         && msys2_extra_gmime3_pkg_description \
@@ -143,7 +147,7 @@ groups=('net-utils')
 license=('GPL-3.0')
 url="https://www.djcbsoftware.nl/code/mu/"
 # depends=(xapian-core libiconv libguile guile gmp libgc libcrypt)
-# makedepends=(git emacs glib2-devel libiconv-devel libguile-devel gmp-devel libgc-devel libcrypt-devel xapian-core gmime3)
+# makedepends=(git glib2-devel libiconv-devel libguile-devel gmp-devel libgc-devel libcrypt-devel xapian-core gmime3)
 depends=(glib2 xapian-core libiconv )
 makedepends=(git glib2-devel libiconv-devel xapian-core gmime3 diffutils)
 source=("git+https://github.com/djcb/mu")
@@ -160,7 +164,11 @@ build() {
     if grep '^AX_LIB_READLINE' configure.ac; then
        patch -p1 < ../../mu-readline.patch
     fi
+    if test -f Makefile; then
+       make distclean
+    fi
     chmod +x ./autogen.sh
+    echo Using EMACS=$EMACS
     ./autogen.sh --disable-gtk --disable-webkit --disable-guile --disable-readline
     make
 }
