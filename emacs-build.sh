@@ -218,7 +218,13 @@ function action2_install ()
         rm -rf "$emacs_install_dir"
         mkdir -p "$emacs_install_dir"
         echo Installing Emacs into directory $emacs_install_dir
+        # HACK!!! Somehow libgmp is not installed as part of the
+        # standalone Emacs build process. This is weird, but means
+        # we have to copy it by hand.
+        set -x
+        cygpath
         make -j 4 -C $emacs_build_dir install \
+            && cp "${mingw_dir}bin/libgmp"*.dll "$emacs_install_dir/bin/" \
             && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
             && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+'
     fi
@@ -354,16 +360,21 @@ share/man/man3
 share/man/man5
 share/man/mann
 share/readline
+usr/bin/*gett*
+usr/bin/msg*.exe
 usr/include
 usr/lib/cmake
 usr/lib/gettext
 usr/lib/pkgconfig
 usr/lib/.*.a
-usr/share/
+usr/lib/terminfo
+usr/share/terminfo
 usr/share/aclocal
 usr/share/info
 usr/share/doc/xapian-core
 usr/share/gtk-doc/html
+usr/share/man1/gett*
+usr/share/man1/msg*
 usr/share/man2
 usr/share/man3
 usr/share/man7
@@ -373,6 +384,7 @@ dependency_exclusions=""
 all_features=`feature_list | cut -f 1 -d ' '`
 features="$all_features"
 branches=""
+
 actions=""
 do_clean=""
 debug_dependency_list="false"
