@@ -221,8 +221,6 @@ function action2_install ()
         # HACK!!! Somehow libgmp is not installed as part of the
         # standalone Emacs build process. This is weird, but means
         # we have to copy it by hand.
-        set -x
-        cygpath
         make -j 4 -C $emacs_build_dir install \
             && cp "${mingw_dir}bin/libgmp"*.dll "$emacs_install_dir/bin/" \
             && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
