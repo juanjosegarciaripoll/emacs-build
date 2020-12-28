@@ -134,6 +134,16 @@ function package_dependencies ()
     rm -f "$zipfile"
     mkdir -p `dirname "$zipfile"`
     cd $mingw_dir
+    if test -n "$debug_dependency_list"; then
+        echo Files prior to filter
+        pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
+            | grep "^$mingw_dir" | sed -e "s,^$mingw_dir,,g"
+        echo Filter
+        echo $slim_exclusions
+        echo Files to package
+        pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
+            | grep "^$mingw_dir" | sed -e "s,^$mingw_dir,,g" | dependency_filter
+    fi
     echo Packing dependency files from root dir $mingw_dir
     pacman -Ql $dependencies | cut -d ' ' -f 2 | sort | uniq \
         | grep "^$mingw_dir" | sed -e "s,^$mingw_dir,,g" | dependency_filter | xargs zip -9v $zipfile
