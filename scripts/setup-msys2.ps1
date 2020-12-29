@@ -15,6 +15,7 @@ if ( !(Test-Path ${msys2_dir}) ) {
 if ( !(Test-Path ${msys2_dir}\msys2_shell.cmd) ) {
     if ( !(Test-Path ${installer}) ) {
         echo "Downloading MSYS2 installer to ${installer}"
+        [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
         Invoke-WebRequest -Uri $inst_url -OutFile ${installer}
     }
     $checksum = (Get-FileHash ${installer} -Algorithm SHA256)[0].Hash
