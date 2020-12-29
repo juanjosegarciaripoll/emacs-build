@@ -55,8 +55,7 @@ function action3_pdf_tools ()
         && pdf_tools_build \
         && pdf_tools_install \
         && pdf_tools_package \
-        && emacs_extensions="$pdf_tools_zip_file $emacs_extensions" \
-        && rm -rf "$pdf_tools_build_dir" "$pdf_tools_install_dir"
+        && emacs_extensions="$pdf_tools_zip_file $emacs_extensions"
 }
 
 function pdf_tools_ensure_packages ()
