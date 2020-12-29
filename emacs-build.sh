@@ -360,7 +360,7 @@ actions=""
 do_clean=""
 debug_dependency_list="false"
 emacs_compress_files=no
-emacs_build_version=0.2
+emacs_build_version=0.3
 emacs_slim_build=yes
 while test -n "$*"; do
     case $1 in
