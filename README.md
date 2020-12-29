@@ -1,4 +1,4 @@
-# emacs-build v0.2.1
+# emacs-build v0.3
 
 Scripts to build a distribution of Emacs from sources, using MSYS2 and Mingw64(32)
 
