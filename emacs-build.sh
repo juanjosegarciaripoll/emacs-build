@@ -193,7 +193,7 @@ function action2_install ()
         make -j 4 -C $emacs_build_dir install \
             && cp "${mingw_dir}bin/libgmp"*.dll "$emacs_install_dir/bin/" \
             && rm -f "$emacs_install_dir/bin/emacs-*.exe" \
-            && find "$emacs_install_dir" -name '*.exe' -exec strip '{}' '+' \
+            && find "$emacs_install_dir" -name '*.exe' -exec strip -g --strip-unneeded -X '{}' '+' \
             && cp "$emacs_build_root/scripts/site-start.el" "$emacs_install_dir/share/emacs/site-lisp" \
             && mkdir -p "$emacs_install_dir/usr/share/emacs/site-lisp/" \
             && cp "$emacs_install_dir/share/emacs/site-lisp/subdirs.el" \
@@ -260,7 +260,7 @@ function action5_package_all ()
                 return -1
             fi
         done
-        find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | grep -v msys-[.0-9]*.dll | xargs strip
+        find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | grep -v msys-[.0-9]*.dll | xargs strip -g --strip-unneeded -X
         find . -type f | sort | dependency_filter | xargs zip -9v "$emacs_distfile"
     fi
 }
@@ -369,23 +369,26 @@ while test -n "$*"; do
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
         --not-slim) emacs_slim_build=no;;
         --slim) emacs_slim_build=yes;;
+        --compress) emacs_compress_files=yes;;
+        --debug) set -x;;
+        --debug-dependencies) debug_dependency_list="true";;
+
         --clean) add_actions action0_clean;;
         --clean-all) add_actions action0_clean action0_clean_rest;;
         --clone) add_actions action0_clone;;
-        --debug) set -x;;
         --ensure) add_actions action1_ensure_packages;;
         --build) add_actions action1_ensure_packages action2_build;;
         --deps) add_actions action1_ensure_packages action3_package_deps;;
         --pack-emacs) add_actions action2_install action4_package_emacs;;
         --pack-all) add_actions action1_ensure_packages action3_package_deps action2_install action5_package_all;;
-        --version) write_version_number;;
+
         --pdf-tools) add_actions action2_install action3_pdf_tools;;
-        --compress) emacs_compress_files=yes;;
         --mu) add_actions action2_install action3_mu;;
         --isync) add_actions action3_isync;;
-        --debug-dependencies) debug_dependency_list="true";;
         --hunspell) add_actions action3_hunspell;;
+
         -?|-h|--help) write_help; exit 0;;
+        --version) write_version_number;;
         *) echo Unknown option "$1". Aborting; exit -1;;
     esac
     shift
