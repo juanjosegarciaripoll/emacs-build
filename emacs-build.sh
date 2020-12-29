@@ -394,7 +394,7 @@ var
 dependency_exclusions=""
 all_features=`feature_list | cut -f 1 -d ' '`
 features="$all_features"
-branches=""
+branch=""
 
 actions=""
 do_clean=""
@@ -404,7 +404,7 @@ emacs_build_version=0.2
 emacs_slim_build=yes
 while test -n "$*"; do
     case $1 in
-        --branch) shift; branches="$branches $1";;
+        --branch) shift; branch="$1";;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
         --not-slim) emacs_slim_build=no;;
@@ -437,8 +437,8 @@ if test "$emacs_slim_build" = "yes"; then
     dependency_exclusions="$slim_exclusions"
     emacs_compress_files=yes
 fi
-if test -z "$branches"; then
-    branches="emacs-27"
+if test -z "$branch"; then
+    branch="emacs-27"
 fi
 if test "$emacs_compress_files" = yes; then
     add_actions action3_gzip
@@ -459,23 +459,21 @@ emacs_build_install_dir="$emacs_build_root/pkg"
 emacs_build_zip_dir="$emacs_build_root/zips"
 check_mingw_architecture
 ensure_mingw_build_software
-for branch in $branches; do
-    emacs_extensions=""
-    emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
-    emacs_depsfile="`pwd`/zips/emacs-${branch}-${architecture}-deps.zip"
-    emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
-    emacs_srcfile="`pwd`/zips/emacs-${branch}-src.zip"
-    emacs_dependencies=""
-    for action in $actions; do
-        emacs_source_dir="$emacs_build_git_dir/$branch"
-        emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
-        emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
-        if $action 2>&1 ; then
-            echo Action $action succeeded.
-        else
-            echo Action $action failed.
-            echo Aborting builds for branch $branch and architecture $architecture
-            exit -1
-        fi
-    done
+emacs_extensions=""
+emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
+emacs_depsfile="`pwd`/zips/emacs-${branch}-${architecture}-deps.zip"
+emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
+emacs_srcfile="`pwd`/zips/emacs-${branch}-src.zip"
+emacs_dependencies=""
+for action in $actions; do
+    emacs_source_dir="$emacs_build_git_dir/$branch"
+    emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
+    emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
+    if $action 2>&1 ; then
+        echo Action $action succeeded.
+    else
+        echo Action $action failed.
+        echo Aborting builds for branch $branch and architecture $architecture
+        exit -1
+    fi
 done
