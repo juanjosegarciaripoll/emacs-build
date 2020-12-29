@@ -401,18 +401,14 @@ do_clean=""
 debug_dependency_list="false"
 emacs_compress_files=no
 emacs_build_version=0.2
+emacs_slim_build=yes
 while test -n "$*"; do
     case $1 in
         --branch) shift; branches="$branches $1";;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
-        --slim)
-            delete_feature cairo
-            delete_feature rsvg
-            delete_feature tiff
-            dependency_exclusions="$slim_exclusions"
-            emacs_compress_files=yes
-            ;;
+        --not-slim) emacs_slim_build=no;;
+        --slim) emacs_slim_build=yes;;
         --clean) add_actions action0_clean;;
         --clean-all) add_actions action0_clean action0_clean_rest;;
         --clone) add_actions action0_clone;;
@@ -434,6 +430,13 @@ while test -n "$*"; do
     esac
     shift
 done
+if test "$emacs_slim_build" = "yes"; then
+    delete_feature cairo
+    delete_feature rsvg
+    delete_feature tiff
+    dependency_exclusions="$slim_exclusions"
+    emacs_compress_files=yes
+fi
 if test -z "$branches"; then
     branches="emacs-27"
 fi
