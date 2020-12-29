@@ -1,0 +1,45 @@
+Usage:
+   emacs-build [--version]
+                    [--branch b] [--clone] [--build] [--deps]
+                    [--without-X] [--with-X] [--compress] [--not-slim]
+                    [--pdf-tools] [--hunspell] [--mu] [--isync]
+                    [--pack-emacs] [--pack-all]
+Actions:
+
+   --build       Configure and build Emacs from sources
+   --clean       Remove all directories except sources and zip files
+   --clone       Download Savannah's git repository for Emacs
+   --deps        Create a ZIP file with all the Mingw64/32 dependencies
+   --help        Output this help message
+   --pack-emacs  Package an Emacs previously built with the --build option
+   --pack-all    Package an Emacs previously built, with all the Mingw64/32
+                 dependencies, as well as all extensions (see Extensions below)
+   --version     Output emacs-build version number
+
+   Multiple actions can be selected. The default is to run them all in a logical
+   order: clone, build, deps and pack-all.
+
+Build options:
+   --branch b    Select branch 'b' for the remaining operations
+   --compress    Ship Emacs with gunzip and compress documentation and Emacs
+                 script files.
+   --debug       Output all statements run by the script
+   --debug-dependencies
+                 Describe which MSYS/MINGW packages depend on which, and
+                 which files are discarded from the ZIP files.
+   --slim        Remove Cairo, SVG and TIFF support for a slimmer build
+                 Remove also documentation files and other support files
+                 from the dependencies file. Implies --compress (Default)
+   --not-slim    Deactivate the --slim option
+   --with-X      Add requested feature in the dependencies and build
+   --without-X   Remove requested feature in the dependencies and build
+
+   X is any of the known features for emacs in Windows/Mingw:
+   xpm jpeg tiff gif png rsvg cairo harfbuzz json lcms2 xml2 gnutls zlib
+
+Extensions:
+
+   --pdf-tools   Build and package PDF-TOOLS
+   --hunspell    Include Eli Zaretskii's port of Hunspell
+   --mu          Mail search system and supporting Emacs mu4e libraries
+   --isync       Synchronize email from IMAP/POP to Maildir format (mbsync)

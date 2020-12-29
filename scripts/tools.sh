@@ -21,6 +21,11 @@ function elements_not_in_list ()
     echo $output
 }
 
+function git_branch_name_to_file_name ()
+{
+    echo $1 | sed -e 's,[^-a-zA-Z0-9],_,g'
+}
+
 function clone_repo ()
 {
     # Download a Git repo
@@ -28,6 +33,10 @@ function clone_repo ()
     local branch="$1"
     local repo="$2"
     local source_dir="$3"
+    local dirname="$4"
+    if test -z $dirname; then
+        dirname=`git_branch_name_to_file_name $branch`
+    fi
     if which git >/dev/null 2>&1; then
         echo Found git, nothing to install.
     else

@@ -35,48 +35,7 @@
 . scripts/msys2_extra.sh
 
 function write_help () {
-    cat <<EOF
-Usage:
-
-   ./emacs-build.sh [--branch b]
-                    [--clone] [--build] [--deps] [--pack-emacs] [--pack-all]
-                    [--without-X] [--with-X]
-                    [--pdf-tools] [--hunspell] [--mu] [--isync]
-
-Actions:
-
-   --clean       Remove all directories except sources and zip files
-   --clone       Download Savannah's git repository for Emacs
-   --build       Configure and build Emacs from sources
-   --deps        Create a ZIP file with all the Mingw64/32 dependencies
-   --pack-emacs  Package an Emacs previously built with the --build option
-   --pack-all    Package an Emacs previously built, with all the Mingw64/32
-                 dependencies, as well as all extensions (see Extensions below)
-   --version     Output emacs-build version number
-
-   Multiple actions can be selected. The default is to run them all in a logical
-   order: clone, build, deps and pack-all.
-
-Emacs options:
-   --branch b    Select branch 'b' for the remaining operations
-   --slim        Remove Cairo, SVG and TIFF support for a slimmer build
-                 Remove also documentation files and other support files
-                 from the dependencies file
-   --with-X      Add requested feature in the dependencies and build
-   --without-X   Remove requested feature in the dependencies and build
-
-   X is any of the known features for emacs in Windows/Mingw:
-     `echo $all_features | sed -e 's,\n, ,g'`
-
-Extensions:
-
-   --pdf-tools   Build and package PDF-TOOLS
-   --hunspell    Include Eli Zaretskii's port of Hunspell
-   --mu          Mail search system and supporting Emacs mu4e libraries
-   --isync       Synchronize email from IMAP/POP to Maildir format (mbsync)
-
-EOF
-
+    cat "$emacs_build_root/scripts/help.txt"
 }
 
 function write_version_number ()
@@ -186,11 +145,12 @@ function action0_clean ()
 function action0_clean_rest ()
 {
     rm -rf "$emacs_build_git_dir" "$emacs_build_zip_dir"
+    exit 0
 }
 
 function action0_clone ()
 {
-    clone_repo "$branch" "$emacs_repo" "$emacs_source_dir"
+    clone_repo "$emacs_branch" "$emacs_repo" "$emacs_source_dir" "$emacs_branch_name"
 }
 
 function action1_ensure_packages ()
@@ -394,7 +354,7 @@ var
 dependency_exclusions=""
 all_features=`feature_list | cut -f 1 -d ' '`
 features="$all_features"
-branch=""
+emacs_branch=""
 
 actions=""
 do_clean=""
@@ -404,7 +364,7 @@ emacs_build_version=0.2
 emacs_slim_build=yes
 while test -n "$*"; do
     case $1 in
-        --branch) shift; branch="$1";;
+        --branch) shift; emacs_branch="$1";;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
         --not-slim) emacs_slim_build=no;;
@@ -425,7 +385,7 @@ while test -n "$*"; do
         --isync) add_actions action3_isync;;
         --debug-dependencies) debug_dependency_list="true";;
         --hunspell) add_actions action3_hunspell;;
-        --help) write_help; exit 0;;
+        -?|-h|--help) write_help; exit 0;;
         *) echo Unknown option "$1". Aborting; exit -1;;
     esac
     shift
@@ -437,8 +397,8 @@ if test "$emacs_slim_build" = "yes"; then
     dependency_exclusions="$slim_exclusions"
     emacs_compress_files=yes
 fi
-if test -z "$branch"; then
-    branch="emacs-27"
+if test -z "$emacs_branch"; then
+    emacs_branch="emacs-27"
 fi
 if test "$emacs_compress_files" = yes; then
     add_actions action3_gzip
@@ -460,20 +420,25 @@ emacs_build_zip_dir="$emacs_build_root/zips"
 check_mingw_architecture
 ensure_mingw_build_software
 emacs_extensions=""
-emacs_nodepsfile="`pwd`/zips/emacs-${branch}-${architecture}-nodeps.zip"
-emacs_depsfile="`pwd`/zips/emacs-${branch}-${architecture}-deps.zip"
-emacs_distfile="`pwd`/zips/emacs-${branch}-${architecture}-full.zip"
-emacs_srcfile="`pwd`/zips/emacs-${branch}-src.zip"
+emacs_branch_name=`git_branch_name_to_file_name ${emacs_branch}`
+emacs_nodepsfile="`pwd`/zips/emacs-${emacs_branch_name}-${architecture}-nodeps.zip"
+emacs_depsfile="`pwd`/zips/emacs-${emacs_branch_name}-${architecture}-deps.zip"
+emacs_distfile="`pwd`/zips/emacs-${emacs_branch_name}-${architecture}-full.zip"
+emacs_srcfile="`pwd`/zips/emacs-${emacs_branch_name}-src.zip"
 emacs_dependencies=""
+if test "$emacs_branch_name" != "$emacs_branch"; then
+    echo Emacs branch ${emacs_branch} renamed to ${emacs_branch_name}. This
+    echo was done to avoid filesystem problems.
+fi
 for action in $actions; do
-    emacs_source_dir="$emacs_build_git_dir/$branch"
-    emacs_build_dir="$emacs_build_build_dir/$branch-$architecture"
-    emacs_install_dir="$emacs_build_install_dir/$branch-$architecture"
+    emacs_source_dir="$emacs_build_git_dir/$emacs_branch_name"
+    emacs_build_dir="$emacs_build_build_dir/$emacs_branch_name-$architecture"
+    emacs_install_dir="$emacs_build_install_dir/$emacs_branch_name-$architecture"
     if $action 2>&1 ; then
         echo Action $action succeeded.
     else
         echo Action $action failed.
-        echo Aborting builds for branch $branch and architecture $architecture
+        echo Aborting builds for branch $emacs_branch and architecture $architecture
         exit -1
     fi
 done

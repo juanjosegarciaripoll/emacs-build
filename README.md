@@ -1,4 +1,4 @@
-# emacs-build v0.2
+# emacs-build v0.2.1
 
 Scripts to build a distribution of Emacs from sources, using MSYS2 and Mingw64(32)
 
@@ -31,18 +31,18 @@ The script supports two way of being invoked:
 
 ````
 Usage:
-
-   .\emacs-build.cmd [--branch b]
-                     [--clone] [--build] [--deps] [--pack-emacs] [--pack-all]
-                     [--without-X] [--with-X]
-                     [--pdf-tools] [--hunspell] [--mu] [--isync]
-
+   emacs-build [--version]
+                    [--branch b] [--clone] [--build] [--deps]
+                    [--without-X] [--with-X] [--compress] [--not-slim]
+                    [--pdf-tools] [--hunspell] [--mu] [--isync]
+                    [--pack-emacs] [--pack-all]
 Actions:
 
+   --build       Configure and build Emacs from sources
    --clean       Remove all directories except sources and zip files
    --clone       Download Savannah's git repository for Emacs
-   --build       Configure and build Emacs from sources
    --deps        Create a ZIP file with all the Mingw64/32 dependencies
+   --help        Output this help message
    --pack-emacs  Package an Emacs previously built with the --build option
    --pack-all    Package an Emacs previously built, with all the Mingw64/32
                  dependencies, as well as all extensions (see Extensions below)
@@ -51,16 +51,23 @@ Actions:
    Multiple actions can be selected. The default is to run them all in a logical
    order: clone, build, deps and pack-all.
 
-Emacs options:
+Build options:
    --branch b    Select branch 'b' for the remaining operations
+   --compress    Ship Emacs with gunzip and compress documentation and Emacs
+                 script files.
+   --debug       Output all statements run by the script
+   --debug-dependencies
+                 Describe which MSYS/MINGW packages depend on which, and
+                 which files are discarded from the ZIP files.
    --slim        Remove Cairo, SVG and TIFF support for a slimmer build
                  Remove also documentation files and other support files
-                 from the dependencies file
+                 from the dependencies file. Implies --compress (Default)
+   --not-slim    Deactivate the --slim option
    --with-X      Add requested feature in the dependencies and build
    --without-X   Remove requested feature in the dependencies and build
 
    X is any of the known features for emacs in Windows/Mingw:
-     xpm jpeg tiff gif png rsvg cairo harfbuzz json lcms2 xml2 gnutls zlib
+   xpm jpeg tiff gif png rsvg cairo harfbuzz json lcms2 xml2 gnutls zlib
 
 Extensions:
 
@@ -127,3 +134,24 @@ Regarding the extensions to Emacs and third-party utilities:
   - MINGW packages recipes https://github.com/msys2/MINGW-packages/blob/master/.github/workflows/main.yml
   - Uploading artifacts https://github.com/actions/upload-artifact
     - https://github.com/actions/create-release
+
+# Changelog
+
+## v0.1
+
+- First version of the script, to be run from a preexisting MSYS2/MINGW environment.
+
+## v0.2
+
+- New version of the script using also Windows shell and powershell scripts.
+- The script downloads and creates a fresh new MSYS2/MINGW environment to build Emacs.
+- Fixed some dependency issues, whereby MINGW packages depended on MSYS2 /usr directories.
+
+## v0.3
+
+- Improved help text.
+- New option --compress, which ships gzip with Emacs and compresses non-essential files.
+- Option --slim is now default.
+- Emacs ships with a `site-start.el` that activates the directories for MSYS2 extensions.
+- Only one branch of Emacs can be built.
+- emacs-build no longer uses log files.
