@@ -38,10 +38,10 @@ if ( !(Test-Path ${msys2_dir}\msys2_shell.cmd) ) {
     .\scripts\msys2.cmd -c 'sed -i "s/^CheckSpace/#CheckSpace/g" /etc/pacman.conf'
     # Kill remaining tasks
     taskkill /f /fi 'MODULES EQ msys-2.0.dll'
+    # Final upgrade
+    echo "Final upgrade"
+    .\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -Syuu'
+    # Install packages required by emacs-build
+    echo "Install essential packages"
+    .\scripts\msys2.cmd -c 'pacman --noprogressbar --needed --noconfirm -S git unzip zip base-devel mingw-w64-x86_64-toolchain'
 }
-# Final upgrade
-echo "Final upgrade"
-.\scripts\msys2.cmd -c 'pacman --noprogressbar --noconfirm -Syuu'
-# Install packages required by emacs-build
-echo "Install essential packages"
-.\scripts\msys2.cmd -c 'pacman --noprogressbar --needed --noconfirm -S git unzip zip base-devel mingw-w64-x86_64-toolchain'
