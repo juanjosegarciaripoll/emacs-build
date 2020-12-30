@@ -37,11 +37,9 @@ function clone_repo ()
     if test -z $dirname; then
         dirname=`git_branch_name_to_file_name $branch`
     fi
-    if which git >/dev/null 2>&1; then
-        echo Found git, nothing to install.
-    else
+    if test -z `which git 2>/dev/null`; then
         echo Git is not found, installing it.
-        pacman -S --noconfirm --needed git
+        pacman -S --noconfirm --needed git || return -1
     fi
     pushd . >/dev/null
     local error
@@ -68,7 +66,7 @@ function clone_repo ()
     # again before builds.
     rm -f "$source_dir/configure"
     popd >/dev/null
-    return $?
+    return $error
 }
 
 function full_dependency_list ()
@@ -87,8 +85,9 @@ function full_dependency_list ()
     local context="$3"
     local avoid_prefix="$4"
     local munge_pgks="
-             s,$mingw_prefix-libwinpthread,$mingw_prefix-libwinpthread-git,g;
-             s,$mingw_prefix-libtre,$mingw_prefix-libtre-git,g;"
+             s, ,\n,g;
+             s,$mingw_prefix-libwinpthread\$,$mingw_prefix-libwinpthread-git,g;
+             s,$mingw_prefix-libtre\$,$mingw_prefix-libtre-git,g;"
     if test -z "$avoid_prefix"; then
         packages=`for p in $packages; do echo $mingw_prefix-$p; done`
         skip_pkgs=`for p in $skip_pkgs; do echo $mingw_prefix-$p; done`
