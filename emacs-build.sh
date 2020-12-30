@@ -199,7 +199,6 @@ function action2_install ()
             && cp "$emacs_install_dir/share/emacs/site-lisp/subdirs.el" \
                   "$emacs_install_dir/usr/share/emacs/site-lisp/subdirs.el"
         dir "${emacs_install_dir}/bin"
-        exit -1
     fi
 }
 
@@ -283,7 +282,9 @@ xml2 libxml2
 gnutls gnutls
 zlib zlib
 EOF
-
+    if test "$emacs_nativecomp" = yes; then
+        echo nativecomp libgccjit
+    fi
 }
 
 function delete_feature () {
@@ -364,11 +365,13 @@ debug_dependency_list="false"
 emacs_compress_files=no
 emacs_build_version=0.3
 emacs_slim_build=yes
+emacs_nativecomp=no
 while test -n "$*"; do
     case $1 in
         --branch) shift; emacs_branch="$1";;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
+        --nativecomp) emacs_nativecomp=yes;;
         --not-slim) emacs_slim_build=no;;
         --slim) emacs_slim_build=yes;;
         --compress) emacs_compress_files=yes;;
@@ -395,6 +398,15 @@ while test -n "$*"; do
     esac
     shift
 done
+if test "$emacs_nativecomp" = "yes"; then
+    if test -n "$emacs_branch"; then
+        echo You cannot specify --nativecomp and a branch together.
+        exit -1
+    fi
+    emacs_branch=feature/native-comp
+    all_features=`feature_list | cut -f 1 -d ' '`
+    add_feature nativecomp
+fi
 if test "$emacs_slim_build" = "yes"; then
     delete_feature cairo
     delete_feature rsvg
@@ -413,6 +425,7 @@ if test -z "$actions"; then
     actions="action0_clone action1_ensure_packages action2_build action3_package_deps action5_package_all"
 fi
 features=`for f in $features; do echo $f; done | sort | uniq`
+echo $features
 
 # This is needed for pacman to return the right text
 export LANG=C

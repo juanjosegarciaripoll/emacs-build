@@ -1,5 +1,6 @@
 @echo off
 if x%1 == x goto default
+if %1 == --default-nativecomp goto nativecomp
 if %1 == --clean goto clean
 if %1 == --clean-all goto cleanall
 if %1==--help goto help
@@ -17,6 +18,10 @@ goto:eof
 
 :default
 emacs-build.cmd --clone --deps --build --pack-emacs --pdf-tools --mu --isync --hunspell --pack-all
+goto:eof
+
+:nativecomp
+emacs-build.cmd --nativecomp --clone --deps --build --pack-emacs --pdf-tools --mu --isync --hunspell --pack-all
 goto:eof
 
 :help
