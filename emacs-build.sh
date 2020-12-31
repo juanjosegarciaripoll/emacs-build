@@ -33,6 +33,7 @@
 . scripts/hunspell.sh
 . scripts/gzip.sh
 . scripts/msys2_extra.sh
+. scripts/gnutls.sh
 
 function write_help () {
     cat "$emacs_build_root/scripts/help.txt"
@@ -190,15 +191,15 @@ function action2_install ()
         # HACK!!! Somehow libgmp is not installed as part of the
         # standalone Emacs build process. This is weird, but means
         # we have to copy it by hand.
-        make -j 4 -C $emacs_build_dir install \
+        make -j $emacs_build_threads -C $emacs_build_dir install \
             && cp "${mingw_dir}bin/libgmp"*.dll "$emacs_install_dir/bin/" \
+            && action2_patch_gnutls \
             && rm -f "$emacs_install_dir/bin/emacs-"*.exe \
             && find "$emacs_install_dir" -name '*.exe' -exec strip -g --strip-unneeded -X '{}' '+' \
             && cp "$emacs_build_root/scripts/site-start.el" "$emacs_install_dir/share/emacs/site-lisp" \
             && mkdir -p "$emacs_install_dir/usr/share/emacs/site-lisp/" \
             && cp "$emacs_install_dir/share/emacs/site-lisp/subdirs.el" \
                   "$emacs_install_dir/usr/share/emacs/site-lisp/subdirs.el"
-        dir "${emacs_install_dir}/bin"
     fi
 }
 
@@ -363,11 +364,13 @@ actions=""
 do_clean=""
 debug_dependency_list="false"
 emacs_compress_files=no
-emacs_build_version=0.3
+emacs_build_version=0.3.1
 emacs_slim_build=yes
 emacs_nativecomp=no
+emacs_build_threads=1
 while test -n "$*"; do
     case $1 in
+        --threads) shift; emacs_build_threads="$1";;
         --branch) shift; emacs_branch="$1";;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
@@ -425,7 +428,6 @@ if test -z "$actions"; then
     actions="action0_clone action1_ensure_packages action2_build action3_package_deps action5_package_all"
 fi
 features=`for f in $features; do echo $f; done | sort | uniq`
-echo $features
 
 # This is needed for pacman to return the right text
 export LANG=C

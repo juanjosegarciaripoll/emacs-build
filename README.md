@@ -1,4 +1,4 @@
-# emacs-build v0.3
+# emacs-build v0.3.1
 
 Scripts to build a distribution of Emacs from sources, using MSYS2 and Mingw64(32)
 
@@ -155,3 +155,7 @@ Regarding the extensions to Emacs and third-party utilities:
 - Emacs ships with a `site-start.el` that activates the directories for MSYS2 extensions.
 - Only one branch of Emacs can be built.
 - emacs-build no longer uses log files.
+
+## v0.3.1
+
+- Emacs-build upgrades GNU TLS version to at least 3.7.0, to allow safe https to MELPA.
