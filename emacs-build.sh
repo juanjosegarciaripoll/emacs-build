@@ -193,13 +193,20 @@ function action2_install ()
         # we have to copy it by hand.
         make -j $emacs_build_threads -C $emacs_build_dir install \
             && cp "${mingw_dir}bin/libgmp"*.dll "$emacs_install_dir/bin/" \
-            && action2_patch_gnutls \
             && rm -f "$emacs_install_dir/bin/emacs-"*.exe \
-            && find "$emacs_install_dir" -name '*.exe' -exec strip -g --strip-unneeded -X '{}' '+' \
+            && emacs_build_strip_exes "$emacs_install_dir" \
             && cp "$emacs_build_root/scripts/site-start.el" "$emacs_install_dir/share/emacs/site-lisp" \
             && mkdir -p "$emacs_install_dir/usr/share/emacs/site-lisp/" \
             && cp "$emacs_install_dir/share/emacs/site-lisp/subdirs.el" \
                   "$emacs_install_dir/usr/share/emacs/site-lisp/subdirs.el"
+    fi
+}
+
+function emacs_build_strip_exes ()
+{
+    local dir="$1"
+    if [ "$emacs_slim_build" = "yes" ]; then
+        find "$dir" -name '*.exe' -exec strip -g --strip-unneeded -X '{}' '+'
     fi
 }
 
@@ -262,7 +269,7 @@ function action5_package_all ()
                 return -1
             fi
         done
-        find "$emacs_full_install_dir" -type f -a -name *.exe -o -name *.dll | grep -v msys-[.0-9]*.dll | xargs strip -g --strip-unneeded -X
+        emacs_build_strip_exes "$emacs_full_install_dir"
         find . -type f | sort | dependency_filter | xargs zip -9v "$emacs_distfile"
     fi
 }
