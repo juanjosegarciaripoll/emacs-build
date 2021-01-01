@@ -6,12 +6,13 @@
 
 function action2_patch_gnutls ()
 {
+    return 0
     #
     # If gnutls is not used or has a recent version, return
     if [[ ! "$features" =~ .*gnutls.* ]]; then
         return 0
     fi
-    tls_version=`pacman -Qi mingw-w64-${mingw_prefix}-gnutls | grep Version | sed 's,Version[ ]*:[ ]*\([^ ]*\)$,\1,'`
+    tls_version=`pacman -Qi ${mingw_prefix}-gnutls | grep Version | sed 's,Version[ ]*:[ ]*\([^ ]*\)$,\1,'`
     if [[ ! "$tls_version" < "3.7.0" ]]; then
         return 0
     fi
