@@ -93,7 +93,7 @@ function ensure_mingw_build_software ()
 function emacs_root_packages ()
 {
     local feature_selector=`echo $features | sed -e 's, ,|,g'`
-    feature_list | grep -E "$feature_selector" | cut -d ' ' -f 2-
+    feature_list | grep -E "$feature_selector" | cut -d ' ' -f 2- | sed -e "s,mingw-,${mingw_prefix}-,g"
 }
 
 function emacs_dependencies ()
@@ -105,7 +105,7 @@ function emacs_dependencies ()
         errcho Inspecting required packages for build features
         errcho   $features
         local packages=`emacs_root_packages`
-        emacs_dependencies=`full_dependency_list "$packages" "glib2" "Emacs"`
+        emacs_dependencies=`full_dependency_list "$packages" "${mingw_prefix}-glib2" "Emacs"`
         errcho Total packages required:
         for p in $emacs_dependencies; do
             errcho "  $p"
@@ -159,7 +159,7 @@ function action1_ensure_packages ()
     # Collect the list of packages required for running Emacs, and ensure they
     # have been installed.
     #
-    ensure_packages `emacs_dependencies`
+    ensure_packages `emacs_root_packages`
 }
 
 function action2_build ()
@@ -276,19 +276,19 @@ function action5_package_all ()
 
 function feature_list () {
     cat <<EOF
-xpm xpm-nox
-jpeg libjpeg-turbo
-tiff libtiff
-gif giflib
-png libpng
-rsvg librsvg
-cairo cairo
-harfbuzz harfbuzz
-json jansson
-lcms2 lcms2
-xml2 libxml2
-gnutls gnutls
-zlib zlib
+xpm mingw-xpm-nox
+jpeg mingw-libjpeg-turbo
+tiff mingw-libtiff
+gif mingw-giflib
+png mingw-libpng
+rsvg mingw-librsvg
+cairo mingw-cairo
+harfbuzz mingw-harfbuzz
+json mingw-jansson
+lcms2 mingw-lcms2
+xml2 mingw-libxml2
+gnutls mingw-gnutls
+zlib mingw-zlib
 EOF
     if test "$emacs_nativecomp" = yes; then
         echo nativecomp libgccjit

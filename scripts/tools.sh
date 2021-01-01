@@ -88,10 +88,6 @@ function full_dependency_list ()
              s, ,\n,g;
              s,$mingw_prefix-libwinpthread\$,$mingw_prefix-libwinpthread-git,g;
              s,$mingw_prefix-libtre\$,$mingw_prefix-libtre-git,g;"
-    if test -z "$avoid_prefix"; then
-        packages=`for p in $packages; do echo $mingw_prefix-$p; done`
-        skip_pkgs=`for p in $skip_pkgs; do echo $mingw_prefix-$p; done`
-    fi
     local oldpackages
     local dependencies
     if "$debug_dependency_list"; then
