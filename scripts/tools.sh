@@ -3,22 +3,15 @@ function errcho ()
     echo "$@" >&2
 }
 
+function unique_list ()
+{
+    echo $* | sed -e 's,[[:space:]][[:space:]]*,\n,g' | sort | uniq | sed -e '/^$/d'
+}
+
 function elements_not_in_list ()
 {
-    output=""
-    for element in $1; do
-        for other in $2; do
-            found=""
-            if test "$element" = "$other"; then
-                found="$element"
-                break
-            fi
-        done
-        if test -z "$found"; then
-            output="$element $output"
-        fi
-    done
-    echo $output
+    local listb=`echo $2 | sed 's,[[:space:]]+,|,g'`
+    echo $1 | sed 's,[[:space:]],\n,g' | sort | uniq | grep -E -v "($listb)"
 }
 
 function git_branch_name_to_file_name ()
@@ -65,6 +58,14 @@ function clone_repo ()
     return $error
 }
 
+function raw_dependencies_wo_versions ()
+{
+    local munge_pgks="
+             s,$mingw_prefix-libwinpthread\$,$mingw_prefix-libwinpthread-git,g;
+             s,$mingw_prefix-libtre\$,$mingw_prefix-libtre-git,g;"
+    pacman -Qii $* | grep Depends | sed -e 's,[>=][^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g' -e "$munge_pgks"
+}
+
 function full_dependency_list ()
 {
     # Given a list of packages, print a list of all dependencies
@@ -80,20 +81,15 @@ function full_dependency_list ()
     local skip_pkgs="$2"
     local context="$3"
     local avoid_prefix="$4"
-    local munge_pgks="
-             s, ,\n,g;
-             s,$mingw_prefix-libwinpthread\$,$mingw_prefix-libwinpthread-git,g;
-             s,$mingw_prefix-libtre\$,$mingw_prefix-libtre-git,g;"
     local oldpackages
     local dependencies
     if "$debug_dependency_list"; then
-        local dependencies
         local newpackages
         errcho "Debugging package list for $3"
         while test "$oldpackages" != "$packages" ; do
             oldpackages="$packages"
             for p in $packages; do
-                dependencies=`pacman -Qii $p | grep Depends | sed -e 's,[>=][^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g' -e "$munge_pgks"`
+                dependencies=`raw_dependencies_wo_versions $p`
                 dependencies=`elements_not_in_list "$dependencies" "$skip_pkgs $packages"`
                 if test -n "$dependencies"; then
                     errcho "Package $p introduces"
@@ -101,15 +97,15 @@ function full_dependency_list ()
                     newpackages="$dependencies $newpackages"
                 fi
             done
-            packages=`echo $packages $newpackages | sed -e 's, [ ]*,\n,g' | sort | uniq`
+            packages=`unique_list $packages $newpackages`
         done
     else
         while test "$oldpackages" != "$packages" ; do
             oldpackages="$packages"
-            dependencies=`pacman -Qii $oldpackages | grep Depends | sed -e 's,[>=][^ ]*,,g;s,Depends[^:]*:,,g;s,None,,g' -e "$munge_pgks"`
+            dependencies=`raw_dependencies_wo_versions $oldpackages`
             test -n "$skip_pkgs" && \
                 dependencies=`elements_not_in_list "$dependencies" "$skip_pkgs"`
-            packages=`echo $oldpackages $dependencies | sed -e 's, ,\n,g' | sort | uniq`
+            packages=`unique_list $oldpackages $dependencies`
         done
     fi
     echo $packages

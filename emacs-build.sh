@@ -301,7 +301,7 @@ function delete_feature () {
 }
 
 function add_feature () {
-    features=`echo $features $1 | sort | uniq`
+    features="$1 $features"
 }
 
 function add_actions () {
@@ -432,11 +432,11 @@ fi
 if test "$emacs_compress_files" = yes; then
     add_actions action3_gzip
 fi
-actions=`echo $actions | sed 's,[ ],\n,g' | sort | uniq`
+actions=`unique_list $actions`
 if test -z "$actions"; then
     actions="action0_clone action1_ensure_packages action2_build action3_package_deps action5_package_all"
 fi
-features=`for f in $features; do echo $f; done | sort | uniq`
+features=`unique_list $features`
 
 # This is needed for pacman to return the right text
 export LANG=C
