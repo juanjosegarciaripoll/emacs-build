@@ -186,3 +186,18 @@ function prepare_build_dir ()
         mkdir -p "$build_dir"
     fi
 }
+
+function try_download ()
+{
+    local url="$1"
+    local destination="$2"
+    local attempts="$3"
+    if [ -z "$attempts" ]; then
+        attempts=3
+    fi
+    while [ $attempts -gt 0 ]; then
+        curl --progress-bar --retry 3 --output "$destination" "$url" && return 0
+        attempts=$(($attempts - 1))
+    fi
+    return -1
+}

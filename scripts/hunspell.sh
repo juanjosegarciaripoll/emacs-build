@@ -6,7 +6,9 @@ function action3_hunspell ()
     if test -f "$hunspell_zip_file"; then
         echo File $hunspell_zip_file already exists.
     else
-        curl -L "$hunspell_link" > $hunspell_zip_file
+        try_download "$hunspell_link" "$hunspell_zip_file" \
+            && test -f "$hunspell_zip_file" \
+            && unzip -t "$hunspell_zip_file"
         if test "$?" != 0; then
             echo Unable to download Hunspell from
             echo "  $hunspell_link"
