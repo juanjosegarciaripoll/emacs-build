@@ -25,20 +25,20 @@
 # Extra components to build and configure PDF-TOOLS in MSYS2/Mingw64
 #
 
-pdf_tools_repo="https://github.com/politza/pdf-tools"
-pdf_tools_branch="master"
-pdf_tools_dependencies=""
-pdf_tools_packages="poppler glib2"
-
 function action3_pdf_tools ()
 {
-    pdf_tools_source_dir="$emacs_build_git_dir/pdf-tools"
-    pdf_tools_server_dir="$pdf_tools_source_dir/server"
-    pdf_tools_build_dir="$emacs_build_build_dir/pdf-tools-$architecture"
-    pdf_tools_install_dir="$emacs_build_install_dir/pdf-tools-$architecture"
-    pdf_tools_log_file="$pdf_tools_build_dir/log"
-    pdf_tools_zip_file="$emacs_build_zip_dir/pdf-tools-${architecture}.zip"
-    pdf_tools_skip_packages="python tcl"
+    local pdf_tools_repo="https://github.com/politza/pdf-tools"
+    local pdf_tools_branch="master"
+    local pdf_tools_dependencies=""
+    local pdf_tools_packages="${mingw_prefix}-poppler ${mingw_prefix}-glib2"
+
+    local pdf_tools_source_dir="$emacs_build_git_dir/pdf-tools"
+    local pdf_tools_server_dir="$pdf_tools_source_dir/server"
+    local pdf_tools_build_dir="$emacs_build_build_dir/pdf-tools-$architecture"
+    local pdf_tools_install_dir="$emacs_build_install_dir/pdf-tools-$architecture"
+    local pdf_tools_log_file="$pdf_tools_build_dir/log"
+    local pdf_tools_zip_file="$emacs_build_zip_dir/pdf-tools-${architecture}.zip"
+    local pdf_tools_skip_packages="python tcl"
 
     if test -f $pdf_tools_zip_file; then
         echo File $pdf_tools_zip_file already exists. Refusing to rebuild.
