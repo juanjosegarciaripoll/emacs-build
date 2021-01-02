@@ -1,19 +1,14 @@
 function action3_hunspell ()
 {
-    hunspell_link="https://sourceforge.net/projects/ezwinports/files/hunspell-1.3.2-3-w32-bin.zip"
-    hunspell_zip_file="$emacs_build_zip_dir/hunspell.zip"
-
+    local hunspell_zip_file="$emacs_build_zip_dir/hunspell-${architecture}.zip"
     if test -f "$hunspell_zip_file"; then
         echo File $hunspell_zip_file already exists.
     else
-        try_download "$hunspell_link" "$hunspell_zip_file" \
-            && test -f "$hunspell_zip_file" \
-            && unzip -t "$hunspell_zip_file"
-        if test "$?" != 0; then
-            echo Unable to download Hunspell from
-            echo "  $hunspell_link"
-            return -1
-        fi
+        local packages="${mingw_prefix}-hunspell ${mingw_prefix}-hunspell-en"
+        ensure_packages "$packages" \
+            && msys2_extra_package "$packages" "$mingw_dir" "" "$hunspell_zip_file" \
+            && emacs_extensions="$hunspell_zip_file $emacs_extensions" \
+            && return 0
+        return -1
     fi
-    emacs_extensions="$hunspell_zip_file $emacs_extensions"
 }

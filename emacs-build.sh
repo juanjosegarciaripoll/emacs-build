@@ -30,6 +30,7 @@
 
 . scripts/tools.sh
 . scripts/pdf-tools.sh
+. scripts/aspell.sh
 . scripts/hunspell.sh
 . scripts/gzip.sh
 . scripts/msys2_extra.sh
@@ -400,6 +401,7 @@ while test -n "$*"; do
         --pdf-tools) add_actions action2_install action3_pdf_tools;;
         --mu) add_actions action2_install action3_mu;;
         --isync) add_actions action3_isync;;
+        --aspell) add_actions action3_aspell;;
         --hunspell) add_actions action3_hunspell;;
 
         -?|-h|--help) write_help; exit 0;;
