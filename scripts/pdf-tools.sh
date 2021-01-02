@@ -29,23 +29,22 @@ function action3_pdf_tools ()
 {
     local pdf_tools_repo="https://github.com/politza/pdf-tools"
     local pdf_tools_branch="master"
-    local pdf_tools_dependencies=""
     local pdf_tools_packages="${mingw_prefix}-poppler ${mingw_prefix}-glib2"
 
     local pdf_tools_source_dir="$emacs_build_git_dir/pdf-tools"
     local pdf_tools_server_dir="$pdf_tools_source_dir/server"
     local pdf_tools_build_dir="$emacs_build_build_dir/pdf-tools-$architecture"
     local pdf_tools_install_dir="$emacs_build_install_dir/pdf-tools-$architecture"
-    local pdf_tools_log_file="$pdf_tools_build_dir/log"
     local pdf_tools_zip_file="$emacs_build_zip_dir/pdf-tools-${architecture}.zip"
-    local pdf_tools_skip_packages="python tcl"
+    local pdf_tools_skip_packages="${mingw_prefix}-python ${mingw_prefix}-tk ${mingw_prefix}-tcl"
+
+    pdf_tools_dependencies=""
 
     if test -f $pdf_tools_zip_file; then
         echo File $pdf_tools_zip_file already exists. Refusing to rebuild.
         return 0
     fi
 
-    rm -f "$pdf_tools_log_file"
     pdf_tools_ensure_packages \
         && pdf_tools_clone \
         && prepare_source_dir "$pdf_tools_server_dir" \
@@ -92,15 +91,13 @@ function pdf_tools_dependencies ()
 
 function pdf_tools_configure ()
 {
-    cd $pdf_tools_build_dir && \
-        "$pdf_tools_server_dir/configure" \
-            "--prefix=$pdf_tools_install_dir" > $pdf_tools_log_file 2>&1
+    cd $pdf_tools_build_dir && "$pdf_tools_server_dir/configure" "--prefix=$pdf_tools_install_dir"
 }
 
 function pdf_tools_build ()
 {
     echo Building PDF-TOOLS into directory $pdf_tools_build_dir
-    make -C $pdf_tools_build_dir > $pdf_tools_log_file 2>&1
+    make -C $pdf_tools_build_dir
 }
 
 function pdf_tools_byte_compile ()
@@ -126,5 +123,23 @@ function pdf_tools_package ()
 {
     package_dependencies "$pdf_tools_zip_file" "`pdf_tools_dependencies`" \
         && cd "$pdf_tools_install_dir" \
-        && zip -9r "$pdf_tools_zip_file" * 2>&1
+        && zip -9r "$pdf_tools_zip_file" *
+}
+
+
+function test_epdfinfo ()
+{
+    local empty_page="$emacs_build_root/tmp/empty.pdf"
+    local epdfinfo="$emacs_full_install_dir/bin/epdfinfo.exe"
+    test -x $epdfinfo \
+        && mkdir -p `dirname "$empty_page"` \
+        && pdf_tools_empty_page > "$empty_page" \
+        && (echo renderpage:$empty_page:1:100; echo quit) | $epdfinfo
+}
+
+function pdf_tools_empty_page ()
+{
+    cat <<\EOF
+%PDF-1.0\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 3 3]>>endobj\nxref\n0 4\n000000000065535 f\n0000000010 00000 n\n0000000053 00000 n\n0000000102 00000 n\ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n149\n%EOF
+EOF
 }

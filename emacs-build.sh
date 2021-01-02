@@ -256,7 +256,6 @@ function action5_package_all ()
             return -1
         fi
     done
-    local emacs_full_install_dir="${emacs_install_dir}-full"
     rm -rf "$emacs_full_install_dir"
     if cp -rf "$emacs_install_dir" "$emacs_full_install_dir"; then
         rm -f "$emacs_distfile"
@@ -404,6 +403,8 @@ while test -n "$*"; do
         --aspell) add_actions action3_aspell;;
         --hunspell) add_actions action3_hunspell;;
 
+        --test-pdf-tools) add_actions test_epdfinfo;;
+
         -?|-h|--help) write_help; exit 0;;
         --version) write_version_number;;
         *) echo Unknown option "$1". Aborting; exit -1;;
@@ -463,6 +464,7 @@ for action in $actions; do
     emacs_source_dir="$emacs_build_git_dir/$emacs_branch_name"
     emacs_build_dir="$emacs_build_build_dir/$emacs_branch_name-$architecture"
     emacs_install_dir="$emacs_build_install_dir/$emacs_branch_name-$architecture"
+    emacs_full_install_dir="${emacs_install_dir}-full"
     if $action 2>&1 ; then
         echo Action $action succeeded.
     else
