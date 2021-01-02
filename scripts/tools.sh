@@ -191,9 +191,9 @@ function try_download ()
     if [ -z "$attempts" ]; then
         attempts=3
     fi
-    while [ $attempts -gt 0 ]; then
+    while [ $attempts -gt 0 ]; do
         curl --progress-bar --retry 3 --output "$destination" "$url" && return 0
         attempts=$(($attempts - 1))
-    fi
+    done
     return -1
 }
