@@ -134,7 +134,7 @@ function test_epdfinfo ()
     test -x $epdfinfo \
         && mkdir -p `dirname "$empty_page"` \
         && pdf_tools_empty_page > "$empty_page" \
-        && (echo renderpage:$empty_page:1:100; echo quit) | $epdfinfo
+        && (echo renderpage:$empty_page:1:100; echo quit) | $epdfinfo >/dev/null 2>&1
 }
 
 function pdf_tools_empty_page ()

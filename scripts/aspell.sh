@@ -12,3 +12,10 @@ function action3_aspell ()
         return -1
     fi
 }
+
+function test_aspell ()
+{
+    local aspell="$emacs_full_install_dir/bin/aspell.exe"
+    test -x "$aspell" \
+         && "$aspell" dicts | grep en_US >/dev/null 2>&1
+}

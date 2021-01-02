@@ -402,6 +402,10 @@ while test -n "$*"; do
         --hunspell) add_actions action3_hunspell;;
 
         --test-pdf-tools) add_actions test_epdfinfo;;
+        --test-mu) add_actions test_mu;;
+        --test-isync) add_actions test_isync;;
+        --test-aspell) add_actions test_aspell;;
+
 
         -?|-h|--help) write_help; exit 0;;
         --version) write_version_number;;

@@ -44,6 +44,13 @@ function action3_mu ()
         && msys2_extra_package mu-git "/" "glib2 xapian-core gmime3" "$mu_zip_file"
 }
 
+function test_mu ()
+{
+    local mu="$emacs_full_install_dir/usr/bin/mu.exe"
+    test -x "$mu" \
+         && "$mu" --help | grep "mu general options" >/dev/null 2>&1
+}
+
 function action3_isync ()
 {
     local isync_zip_file="$emacs_build_zip_dir/isync-${architecture}.zip"
@@ -53,6 +60,13 @@ function action3_isync ()
         && msys2_extra_build_and_install_package isync \
         && emacs_extensions="$isync_zip_file $emacs_extensions" \
         && msys2_extra_package isync-git "/" "gcc-libs ca-certificates" "$isync_zip_file" "$isync_zip_file"
+}
+
+function test_isync ()
+{
+    local mbsync="$emacs_full_install_dir/usr/bin/mbsync.exe"
+    test -x "$mbsync" \
+         && "$mbsync" --help | grep "mailbox synchronizer" >/dev/null 2>&1
 }
 
 function ensure_msys2_devel ()
