@@ -205,7 +205,7 @@ function emacs_build_strip_exes ()
 {
     local dir="$1"
     if [ "$emacs_slim_build" = "yes" ]; then
-        find "$dir" -name '*.exe' -exec strip -g --strip-unneeded -X '{}' '+'
+        find "$dir" -name '*.exe' -exec strip -g --strip-unneeded '{}' '+'
     fi
 }
 
