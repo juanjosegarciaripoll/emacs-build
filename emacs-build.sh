@@ -77,9 +77,7 @@ function ensure_mingw_build_software ()
         echo Giving up
         exit -1
     fi
-    if which git >/dev/null 2>&1; then
-        echo Git is already installed
-    else
+    if [ -z `which git 2>&1` ]; then
         echo Installing Git for MSYS2
         pacman -S --noconfirm --needed git
         if test "$?" != 0; then
@@ -457,8 +455,7 @@ emacs_distfile="$emacs_root/zips/emacs-${emacs_branch_name}-${architecture}-full
 emacs_srcfile="$emacs_root/zips/emacs-${emacs_branch_name}-src.zip"
 emacs_dependencies=""
 if test "$emacs_branch_name" != "$emacs_branch"; then
-    echo Emacs branch ${emacs_branch} renamed to ${emacs_branch_name}. This
-    echo was done to avoid filesystem problems.
+    echo Emacs branch ${emacs_branch} renamed to ${emacs_branch_name} to avoid filesystem problems.
 fi
 for action in $actions; do
     emacs_source_dir="$emacs_build_git_dir/$emacs_branch_name"
