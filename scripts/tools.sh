@@ -37,10 +37,6 @@ function clone_repo ()
     if test -z $dirname; then
         dirname=`git_branch_name_to_file_name $branch`
     fi
-    if test -z `which git 2>/dev/null`; then
-        echo Git is not found, installing it.
-        pacman -S --noconfirm --needed git || return -1
-    fi
     pushd . >/dev/null
     local error
     if test -d "$source_dir"; then
