@@ -425,7 +425,7 @@ if test "$emacs_slim_build" = "yes"; then
     emacs_compress_files=yes
 fi
 if test -z "$emacs_branch"; then
-    emacs_branch="emacs-27"
+    emacs_branch="emacs-27.1.90"
 fi
 if test "$emacs_compress_files" = yes; then
     add_actions action3_gzip
