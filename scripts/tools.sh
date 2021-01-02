@@ -10,7 +10,7 @@ function unique_list ()
 
 function elements_not_in_list ()
 {
-    local listb=`echo $2 | sed 's,[[:space:]]+,|,g'`
+    local listb=`echo $2 | sed 's,[[:space:]][[:space:]]*,|,g'`
     echo $1 | sed 's,[[:space:]],\n,g' | sort | uniq | grep -E -v "($listb)"
 }
 
@@ -86,18 +86,21 @@ function full_dependency_list ()
     if "$debug_dependency_list"; then
         local newpackages
         errcho "Debugging package list for $3"
-        while test "$oldpackages" != "$packages" ; do
-            oldpackages="$packages"
-            for p in $packages; do
+        newpackages="$1"
+        packages=""
+        while [ -n "$newpackages" ]; do
+            oldpackages=`unique_list $newpackages`
+            packages=`unique_list $newpackages $packages`
+            newpackages=""
+            for p in $oldpackages; do
                 dependencies=`raw_dependencies_wo_versions $p`
                 dependencies=`elements_not_in_list "$dependencies" "$skip_pkgs $packages"`
-                if test -n "$dependencies"; then
+                if [ -n "$dependencies" ]; then
                     errcho "Package $p introduces"
                     for i in $dependencies; do errcho "  $i"; done
                     newpackages="$dependencies $newpackages"
                 fi
             done
-            packages=`unique_list $packages $newpackages`
         done
     else
         while test "$oldpackages" != "$packages" ; do
