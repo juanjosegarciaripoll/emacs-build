@@ -1,4 +1,4 @@
-# emacs-build v0.3.1
+# emacs-build v0.3.2
 
 Scripts to build a distribution of Emacs from sources, using MSYS2 and Mingw64(32)
 
@@ -34,7 +34,7 @@ Usage:
    emacs-build [--version]
                     [--branch b] [--clone] [--build] [--deps]
                     [--without-X] [--with-X] [--compress] [--not-slim]
-                    [--pdf-tools] [--hunspell] [--mu] [--isync]
+                    [--pdf-tools] [--aspell] [--hunspell] [--mu] [--isync]
                     [--pack-emacs] [--pack-all]
 Actions:
 
@@ -52,7 +52,7 @@ Actions:
    order: clone, build, deps and pack-all.
 
 Build options:
-   --branch b    Select branch 'b' for the remaining operations
+   --branch b    Select Emacs branch (or tag) 'b' for the remaining operations
    --compress    Ship Emacs with gunzip and compress documentation and Emacs
                  script files.
    --debug       Output all statements run by the script
@@ -72,7 +72,8 @@ Build options:
 Extensions:
 
    --pdf-tools   Build and package PDF-TOOLS
-   --hunspell    Include Eli Zaretskii's port of Hunspell
+   --hunspell    Hunspell spell checker
+   --aspell      Aspell spell checker
    --mu          Mail search system and supporting Emacs mu4e libraries
    --isync       Synchronize email from IMAP/POP to Maildir format (mbsync)
 ````

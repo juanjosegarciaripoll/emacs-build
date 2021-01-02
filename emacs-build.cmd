@@ -17,11 +17,11 @@ cd %~dp0 && for %%i in (build pkg) do if exist %%i rmdir /S /Q %%i
 goto:eof
 
 :default
-emacs-build.cmd --clone --deps --build --pack-emacs --pdf-tools --mu --isync --hunspell --pack-all
+emacs-build.cmd --clone --deps --build --pack-emacs --pdf-tools --mu --isync --aspell --pack-all
 goto:eof
 
 :nativecomp
-emacs-build.cmd --nativecomp --clone --deps --build --pack-emacs --pdf-tools --mu --isync --hunspell --pack-all
+emacs-build.cmd --nativecomp --clone --deps --build --pack-emacs --pdf-tools --mu --isync --aspell --pack-all
 goto:eof
 
 :help
