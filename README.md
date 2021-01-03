@@ -62,7 +62,7 @@ Build options:
    --slim        Remove Cairo, SVG and TIFF support for a slimmer build
                  Remove also documentation files and other support files
                  from the dependencies file. Implies --compress (Default)
-   --not-slim    Deactivate the --slim option
+   --not-slim    Deactivate the --slim option. Build with all features.
    --with-X      Add requested feature in the dependencies and build
    --without-X   Remove requested feature in the dependencies and build
 
