@@ -453,10 +453,10 @@ check_mingw_architecture
 ensure_mingw_build_software
 emacs_extensions=""
 emacs_branch_name=`git_branch_name_to_file_name ${emacs_branch}`
-emacs_nodepsfile="$emacs_root/zips/emacs-${emacs_branch_name}-${architecture}-nodeps.zip"
-emacs_depsfile="$emacs_root/zips/emacs-${emacs_branch_name}-${architecture}-deps.zip"
-emacs_distfile="$emacs_root/zips/emacs-${emacs_branch_name}-${architecture}-full.zip"
-emacs_srcfile="$emacs_root/zips/emacs-${emacs_branch_name}-src.zip"
+emacs_nodepsfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-${architecture}-nodeps.zip"
+emacs_depsfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-${architecture}-deps.zip"
+emacs_distfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-${architecture}-full.zip"
+emacs_srcfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-src.zip"
 emacs_dependencies=""
 if test "$emacs_branch_name" != "$emacs_branch"; then
     echo Emacs branch ${emacs_branch} renamed to ${emacs_branch_name} to avoid filesystem problems.
