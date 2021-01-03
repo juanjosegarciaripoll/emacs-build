@@ -37,7 +37,25 @@
 . scripts/gnutls.sh
 
 function write_help () {
+    echo "Emacs-build tool version $emacs_build_version, (c) 2020 Juan Jose Garcia-Ripoll"
     cat "$emacs_build_root/scripts/help.txt"
+    echo
+    write_features
+}
+
+function write_features () {
+    local inactive=""
+    for f in $all_features; do
+        if [[ ! " $features " =~ .*$f ]]; then
+            inactive="$f $inactive"
+        fi
+    done
+
+    echo "Compressed installation: $emacs_compress_files"
+    echo "Strip executables: $emacs_strip_executables"
+    echo "Emacs features:"
+    for f in $features; do echo "  --with-$f"; done
+    for f in $inactive; do echo " --without $f"; done
 }
 
 function write_version_number ()
@@ -204,7 +222,7 @@ function action2_install ()
 function emacs_build_strip_exes ()
 {
     local dir="$1"
-    if [ "$emacs_slim_build" = "yes" ]; then
+    if [ "$emacs_strip_executables" = "yes" ]; then
         find "$dir" -name '*.exe' -exec strip -g --strip-unneeded '{}' '+'
     fi
 }
@@ -297,6 +315,10 @@ function delete_feature () {
     features=`echo $features | sed -e "s,$1,,"`
 }
 
+function add_all_features () {
+    features="$all_features"
+}
+
 function add_feature () {
     features="$1 $features"
 }
@@ -369,20 +391,37 @@ actions=""
 do_clean=""
 debug_dependency_list="false"
 emacs_compress_files=no
-emacs_build_version=0.3.2
+emacs_build_version=0.4
 emacs_slim_build=yes
 emacs_nativecomp=no
 emacs_build_threads=1
+# This is needed for pacman to return the right text
+export LANG=C
+emacs_repo=https://git.savannah.gnu.org/git/emacs.git
+emacs_build_root=`pwd`
+emacs_build_git_dir="$emacs_build_root/git"
+emacs_build_build_dir="$emacs_build_root/build"
+emacs_build_install_dir="$emacs_build_root/pkg"
+emacs_build_zip_dir="$emacs_build_root/zips"
+emacs_strip_executables="no"
 while test -n "$*"; do
     case $1 in
         --threads) shift; emacs_build_threads="$1";;
         --branch) shift; emacs_branch="$1";;
+        --with-all) add_all_features;;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
         --nativecomp) emacs_nativecomp=yes;;
-        --not-slim) emacs_slim_build=no;;
-        --slim) emacs_slim_build=yes;;
+        --slim) add_all_features
+                delete_feature cairo # We delete features here, so that user can repopulate them
+                delete_feature rsvg
+                delete_feature tiff
+                emacs_compress_files=yes
+                emacs_strip_executables=yes;;
+        --strip) emacs_strip_executables=yes;;
+        --no-strip) emacs_strip_executables=no;;
         --compress) emacs_compress_files=yes;;
+        --no-compress) emacs_compress_files=no;;
         --debug) set -x;;
         --debug-dependencies) debug_dependency_list="true";;
 
@@ -408,6 +447,7 @@ while test -n "$*"; do
 
 
         -?|-h|--help) write_help; exit 0;;
+        --features) write_features; exit 0;;
         --version) write_version_number;;
         *) echo Unknown option "$1". Aborting; exit -1;;
     esac
@@ -423,9 +463,6 @@ if test "$emacs_nativecomp" = "yes"; then
     add_feature nativecomp
 fi
 if test "$emacs_slim_build" = "yes"; then
-    delete_feature cairo
-    delete_feature rsvg
-    delete_feature tiff
     dependency_exclusions="$slim_exclusions"
     emacs_compress_files=yes
 fi
@@ -440,17 +477,9 @@ if test -z "$actions"; then
     actions="action0_clone action1_ensure_packages action2_build action3_package_deps action5_package_all"
 fi
 features=`unique_list $features`
-
-# This is needed for pacman to return the right text
-export LANG=C
-emacs_repo=https://git.savannah.gnu.org/git/emacs.git
-emacs_build_root=`pwd`
-emacs_build_git_dir="$emacs_build_root/git"
-emacs_build_build_dir="$emacs_build_root/build"
-emacs_build_install_dir="$emacs_build_root/pkg"
-emacs_build_zip_dir="$emacs_build_root/zips"
 check_mingw_architecture
 ensure_mingw_build_software
+
 emacs_extensions=""
 emacs_branch_name=`git_branch_name_to_file_name ${emacs_branch}`
 emacs_nodepsfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-${architecture}-nodeps.zip"

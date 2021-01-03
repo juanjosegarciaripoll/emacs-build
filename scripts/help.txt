@@ -1,46 +1,52 @@
 Usage:
-   emacs-build [--version]
+   emacs-build [--version] [--help] [--features]
                     [--branch b] [--clone] [--build] [--deps]
-                    [--without-X] [--with-X] [--compress] [--not-slim]
+                    [--slim] [--[no-]compress] [--[no-]strip]
+                    [--with-all] [--without-X] [--with-X]
                     [--pdf-tools] [--aspell] [--hunspell] [--mu] [--isync]
                     [--pack-emacs] [--pack-all]
 Actions:
-
-   --build       Configure and build Emacs from sources
-   --clean       Remove all directories except sources and zip files
-   --clone       Download Savannah's git repository for Emacs
-   --deps        Create a ZIP file with all the Mingw64/32 dependencies
-   --help        Output this help message
-   --pack-emacs  Package an Emacs previously built with the --build option
+   --build       Configure and build Emacs from sources.
+   --clean       Remove all directories except sources and zip files.
+   --clone       Download Savannah's git repository for Emacs.
+   --deps        Create a ZIP file with all the Mingw64/32 dependencies.
+   --help        Output this help message, --features and exit.
+   --pack-emacs  Package an Emacs previously built with the --build option.
    --pack-all    Package an Emacs previously built, with all the Mingw64/32
-                 dependencies, as well as all extensions (see Extensions below)
-   --version     Output emacs-build version number
+                 dependencies, as well as all extensions (see Extensions below).
+   --features    Shows all active and inactive features for the selected options.
+   --version     Output emacs-build version number and exit.
 
    Multiple actions can be selected. The default is to run them all in a logical
    order: clone, build, deps and pack-all.
 
 Build options:
-   --branch b    Select Emacs branch (or tag) 'b' for the remaining operations
+   --branch b    Select Emacs branch (or tag) 'b' for the remaining operations.
    --compress    Ship Emacs with gunzip and compress documentation and Emacs
                  script files.
-   --debug       Output all statements run by the script
+   --debug       Output all statements run by the script.
    --debug-dependencies
                  Describe which MSYS/MINGW packages depend on which, and
                  which files are discarded from the ZIP files.
-   --slim        Remove Cairo, SVG and TIFF support for a slimmer build
+   --no-strip    Disable the --strip option.
+   --no-compress Disable the --compress option.
+   --slim        Remove Cairo, SVG and TIFF support for a slimmer build.
                  Remove also documentation files and other support files
-                 from the dependencies file. Implies --compress (Default)
-   --not-slim    Deactivate the --slim option. Build with all features.
-   --with-X      Add requested feature in the dependencies and build
-   --without-X   Remove requested feature in the dependencies and build
+                 from the dependencies file. Activate --compress and
+                 --strip. (Default configuration)
+   --strip       Strip executables and DLL's from debug information.
+   --with-all    Add all Emacs features.
+   --with-*      Add requested feature in the dependencies and build
+                 * is any of the known features for emacs in Windows/Mingw
+                 (see --features).
+   --without-*   Remove requested feature in the dependencies and build.
 
-   X is any of the known features for emacs in Windows/Mingw:
-   xpm jpeg tiff gif png rsvg cairo harfbuzz json lcms2 xml2 gnutls zlib
+   Options are processed in order. Thus --slim followed by --with-cairo
+   would enable Cairo, even though --slim removes it.
 
 Extensions:
-
-   --pdf-tools   Build and package PDF-TOOLS
-   --hunspell    Hunspell spell checker
-   --aspell      Aspell spell checker
-   --mu          Mail search system and supporting Emacs mu4e libraries
-   --isync       Synchronize email from IMAP/POP to Maildir format (mbsync)
+   --pdf-tools   Build and package PDF-TOOLS.
+   --hunspell    Install Hunspell spell checker.
+   --aspell      Install Aspell spell checker.
+   --mu          Mail search system and supporting Emacs mu4e libraries.
+   --isync       Synchronize email from IMAP/POP to Maildir format (mbsync).
