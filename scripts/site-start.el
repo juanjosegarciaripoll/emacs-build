@@ -2,7 +2,7 @@
        (emacs-libexec-ndx (string-match "libexec" emacs-libexec-path))
        (emacs-root (substring emacs-libexec-path 0 emacs-libexec-ndx))
        (msys2-dir (expand-file-name "usr/bin/" emacs-root))
-       (mingw-dir (expand-file-name "bin/" emacs-root)
+       (mingw-dir (expand-file-name "bin/" emacs-root)))
   (add-to-list 'exec-path msys2-dir)
   (add-to-list 'exec-path mingw-dir)
   (setenv "PATH" (concat mingw-dir ";" msys2-dir ";" (getenv "PATH")))
