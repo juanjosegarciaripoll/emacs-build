@@ -337,11 +337,11 @@ function dependency_filter () {
 
 slim_exclusions="
 include/
-lib/.*.a
+lib/.*.a$
 lib/cmake
 lib/gettext/intl
 lib/pkgconfig
-lib/python*
+lib/python.*
 share/aclocal
 share/doc/gettext
 share/doc/libasprintf
@@ -368,7 +368,7 @@ usr/include
 usr/lib/cmake
 usr/lib/gettext
 usr/lib/pkgconfig
-usr/lib/.*.a
+usr/lib/.*.a$
 usr/lib/terminfo
 usr/share/terminfo
 usr/share/aclocal
@@ -391,7 +391,7 @@ actions=""
 do_clean=""
 debug_dependency_list="false"
 emacs_compress_files=no
-emacs_build_version=0.4
+emacs_build_version=0.4.1
 emacs_slim_build=yes
 emacs_nativecomp=no
 emacs_build_threads=1
