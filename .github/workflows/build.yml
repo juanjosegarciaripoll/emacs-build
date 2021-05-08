@@ -33,35 +33,34 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: See free space
-        run: powershell -Command Get-PSDrive
+        run: powershell -noprofile -Command Get-PSDrive
 
       # This is the shortest job, but in this case it pulls all MSYS/MINGW64
-      - name: Collect dependencies
-        run: .\emacs-build.cmd --clone
+      - name: Clone Emacs
+        run: .\emacs-build.cmd --clone --repo https://github.com/kiennq/emacs.git
 
       - name: See free space
-        run: powershell -Command Get-PSDrive
+        run: powershell -noprofile -Command Get-PSDrive
 
       # Now download dependencies
-      - name: Show we can write text
-        run: .\emacs-build.cmd --deps
+      # - name: Collect dependencies
+      #   run: .\emacs-build.cmd --deps
+
+      # - name: See free space
+      #   run: powershell -noprofile -Command Get-PSDrive
+
+      - name: Build Emacs
+        run: .\emacs-build.cmd --nativecomp --slim --with-rsvg --build
 
       - name: See free space
-        run: powershell -Command Get-PSDrive
-
-      # Build an pack
-      - name: Show we can write text
-        run: .\emacs-build.cmd --build --pack-emacs
-
-      - name: See free space
-        run: powershell -Command Get-PSDrive
+        run: powershell -noprofile -Command Get-PSDrive
 
       # Full emacs
-      - name: Clone emacs
-        run: .\emacs-build.cmd --pdf-tools --isync --mu --hunspell --pack-all
+      - name: Pack full emacs
+        run: .\emacs-build.cmd --nativecomp --slim --with-rsvg --pack-all
 
       - name: See free space
-        run: powershell -Command Get-PSDrive
+        run: powershell -noprofile -Command Get-PSDrive
 
       # Upload everything
       - name: Upload binaries

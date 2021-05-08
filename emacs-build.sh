@@ -69,11 +69,13 @@ function check_mingw_architecture ()
     case "$MSYSTEM" in
         MINGW32) architecture=i686
                  mingw_prefix="mingw-w64-i686"
-                 mignw_dir="$MINGW_PREFIX/"
+                 mingw_dir="$MINGW_PREFIX/"
+                 build_type="i686-w64-mingw32"
                  ;;
         MINGW64) architecture=x86_64
                  mingw_prefix="mingw-w64-x86_64"
                  mingw_dir="$MINGW_PREFIX/"
+                 build_type="x86_64-w64-mingw32"
                  ;;
         MSYSTEM) echo This tool cannot be ran from an MSYS shell.
                  echo Please open a Mingw64 or Mingw32 terminal.
@@ -122,7 +124,8 @@ function emacs_dependencies ()
         errcho Inspecting required packages for build features
         errcho   $features
         local packages=`emacs_root_packages`
-        emacs_dependencies=`full_dependency_list "$packages" "${mingw_prefix}-glib2" "Emacs"`
+        # emacs_dependencies=`full_dependency_list "$packages" "${mingw_prefix}-glib2" "Emacs"`
+        emacs_dependencies=`full_dependency_list "$packages" "" "Emacs"`
         errcho Total packages required:
         for p in $emacs_dependencies; do
             errcho "  $p"
@@ -136,7 +139,7 @@ function emacs_configure_build_dir ()
     cd "$emacs_build_dir"
     options="--disable-build-details --disable-silent-rules --without-dbus"
     if test "$emacs_compress_files" = "no"; then
-        $options="$options --without-compress-install"
+        options="$options --without-compress-install"
     fi
     for f in $all_features; do
         if echo $features | grep $f > /dev/null; then
@@ -267,7 +270,7 @@ function action5_package_all ()
     for zipfile in "$emacs_depsfile" $emacs_extensions; do
         if test ! -f "$zipfile"; then
             echo Missing zip file `basename $zipfile.` Cannot build full distribution.
-            echo Please use --deps, --build and all extension options before --full.
+            echo Please use --deps, --build and all extension options before --pack-all.
             echo
             return -1
         fi
@@ -286,7 +289,9 @@ function action5_package_all ()
             fi
         done
         emacs_build_strip_exes "$emacs_full_install_dir"
-        find . -type f | sort | dependency_filter | xargs zip -9v "$emacs_distfile"
+        # find . -type f | sort | dependency_filter | xargs zip -9v "$emacs_distfile"
+        # this is easier and not encounter IO problems
+        zip -9vr "$emacs_distfile" ./*
     fi
 }
 
@@ -307,7 +312,7 @@ gnutls mingw-gnutls
 zlib mingw-zlib
 EOF
     if test "$emacs_nativecomp" = yes; then
-        echo nativecomp libgccjit
+        echo native-compilation mingw-libgccjit
     fi
 }
 
@@ -331,55 +336,34 @@ function dependency_filter () {
     if test -z "$dependency_exclusions"; then
         cat -
     else
-        grep -E -v "^(`echo $slim_exclusions | sed 's,[ \n],|,g'`)" -
+        grep -P -v "^(`echo $slim_exclusions | sed 's,[ \n],|,g'`)" -
     fi
 }
 
+check_mingw_architecture
+
+# bin/.*((?<!emacs)(?<!emacsclient)(?<!emacsclientw)(?<!addpm)(?<!ctags)(?<!ebrowse)(?<!etags)).exe
 slim_exclusions="
-include/
-lib/.*.a
-lib/cmake
-lib/gettext/intl
-lib/pkgconfig
-lib/python*
-share/aclocal
-share/doc/gettext
-share/doc/libasprintf
-share/doc/libiconv
-share/doc/libjpeg-turbo
-share/doc/libunistring
-share/doc/libxml2
-share/doc/mpfr
-share/doc/tiff
-share/doc/openssl
-share/doc/pcre
-share/doc/sqlite3
-share/doc/xapian-core
-share/doc/xz
-share/gettext/intl
-share/gtk-doc/html
-share/man/man3
-share/man/man5
-share/man/mann
-share/readline
-usr/bin/*gett*
-usr/bin/msg*.exe
-usr/include
+$build_type/bin
+$build_type/lib/lib((?!mingw32)(?!moldname)(?!mingwex)(?!msvcrt)(?!kernel32)(?!pthread)(?!advapi32)(?!shell32)(?!user32))
+.*bin/.*gett.*.exe$
+.*bin/msg.*\.exe$
+.*doc
+.*include
+etc
+lib/((?!emacs)(?!gcc))
+lib/.*\.exe
+lib/lib(?<!gccjit).*.a$
+share/((?!emacs)(?!icons)(?!info))
+usr/bin
 usr/lib/cmake
 usr/lib/gettext
 usr/lib/pkgconfig
-usr/lib/.*.a
 usr/lib/terminfo
-usr/share/terminfo
 usr/share/aclocal
 usr/share/info
-usr/share/doc/xapian-core
-usr/share/gtk-doc/html
-usr/share/man1/gett*
-usr/share/man1/msg*
-usr/share/man2
-usr/share/man3
-usr/share/man7
+usr/share/man.*
+usr/share/terminfo
 var
 "
 dependency_exclusions=""
@@ -392,7 +376,7 @@ do_clean=""
 debug_dependency_list="false"
 emacs_compress_files=no
 emacs_build_version=0.4
-emacs_slim_build=yes
+emacs_slim_build=no
 emacs_nativecomp=no
 emacs_build_threads=1
 # This is needed for pacman to return the right text
@@ -407,15 +391,17 @@ emacs_strip_executables="no"
 while test -n "$*"; do
     case $1 in
         --threads) shift; emacs_build_threads="$1";;
+        --repo) shift; emacs_repo="$1";;
         --branch) shift; emacs_branch="$1";;
         --with-all) add_all_features;;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
-        --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
+        --with-*) add_feature `echo $1 | sed -e 's,--with-,,'`;;
         --nativecomp) emacs_nativecomp=yes;;
         --slim) add_all_features
                 delete_feature cairo # We delete features here, so that user can repopulate them
                 delete_feature rsvg
                 delete_feature tiff
+                emacs_slim_build=yes
                 emacs_compress_files=yes
                 emacs_strip_executables=yes;;
         --strip) emacs_strip_executables=yes;;
@@ -454,20 +440,14 @@ while test -n "$*"; do
     shift
 done
 if test "$emacs_nativecomp" = "yes"; then
-    if test -n "$emacs_branch"; then
-        echo You cannot specify --nativecomp and a branch together.
-        exit -1
-    fi
-    emacs_branch=feature/native-comp
     all_features=`feature_list | cut -f 1 -d ' '`
-    add_feature nativecomp
+    add_feature native-compilation
 fi
 if test "$emacs_slim_build" = "yes"; then
     dependency_exclusions="$slim_exclusions"
-    emacs_compress_files=yes
 fi
 if test -z "$emacs_branch"; then
-    emacs_branch="emacs-27.1.90"
+    emacs_branch="master"
 fi
 if test "$emacs_compress_files" = yes; then
     add_actions action3_gzip
@@ -477,7 +457,6 @@ if test -z "$actions"; then
     actions="action0_clone action1_ensure_packages action2_build action3_package_deps action5_package_all"
 fi
 features=`unique_list $features`
-check_mingw_architecture
 ensure_mingw_build_software
 
 emacs_extensions=""
