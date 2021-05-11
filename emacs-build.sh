@@ -397,6 +397,8 @@ while test -n "$*"; do
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--with-,,'`;;
         --nativecomp) emacs_nativecomp=yes;;
+        --nativecomp-aot) emacs_nativecomp=yes
+                          export NATIVE_FULL_AOT=1;;
         --slim) add_all_features
                 delete_feature cairo # We delete features here, so that user can repopulate them
                 delete_feature rsvg
