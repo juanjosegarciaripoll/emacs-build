@@ -172,6 +172,9 @@ function action0_clean_rest ()
 function action0_clone ()
 {
     clone_repo "$emacs_branch" "$emacs_repo" "$emacs_source_dir" "$emacs_branch_name"
+    if test "$emacs_apply_patches" = "yes"; then
+        apply_patches "$emacs_source_dir"
+    fi
 }
 
 function action1_ensure_packages ()
@@ -188,7 +191,7 @@ function action2_build ()
     if prepare_source_dir $emacs_source_dir \
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
         echo Building Emacs in directory $emacs_build_dir
-        make -j 4 -C $emacs_build_dir && return 0
+        make -j $emacs_build_threads -C $emacs_build_dir && return 0
     fi
     echo Configuration and build process failed
     return -1
@@ -378,10 +381,11 @@ emacs_compress_files=no
 emacs_build_version=0.4
 emacs_slim_build=no
 emacs_nativecomp=no
-emacs_build_threads=1
+emacs_build_threads=`nproc`
+emacs_apply_patches=yes
 # This is needed for pacman to return the right text
 export LANG=C
-emacs_repo=https://git.savannah.gnu.org/git/emacs.git
+emacs_repo=https://github.com/emacs-mirror/emacs.git
 emacs_build_root=`pwd`
 emacs_build_git_dir="$emacs_build_root/git"
 emacs_build_build_dir="$emacs_build_root/build"
@@ -393,6 +397,7 @@ while test -n "$*"; do
         --threads) shift; emacs_build_threads="$1";;
         --repo) shift; emacs_repo="$1";;
         --branch) shift; emacs_branch="$1";;
+        --no-patches) emacs_apply_patches=no;;
         --with-all) add_all_features;;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--with-,,'`;;

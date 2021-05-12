@@ -42,7 +42,7 @@ function clone_repo ()
         fi
     else
         echo Cloning Emacs repository $repo.
-        git clone --depth 1 -b $branch "$repo" "$source_dir" && \
+        git clone --filter=tree:0 -b $branch "$repo" "$source_dir" && \
             cd "$source_dir" && git config pull.rebase false
         error=$?
         if test $? != 0; then
@@ -54,6 +54,23 @@ function clone_repo ()
     # If there was a 'configure' script, remove it, to force running autoreconf
     # again before builds.
     rm -f "$source_dir/configure"
+    popd >/dev/null
+    return $error
+}
+
+function apply_patches ()
+{
+    local source_dir="$1"
+    local patches_dir="$emacs_build_root/patches"
+    pushd . >/dev/null
+    local error
+    if test -d "$source_dir"; then
+        echo Applying patches in $patches_dir
+        cd $source_dir
+        git apply --ignore-space-change --ignore-whitespace -v $patches_dir/*.patch
+        error=$?
+    fi
+
     popd >/dev/null
     return $error
 }

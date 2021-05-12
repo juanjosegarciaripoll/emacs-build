@@ -37,7 +37,7 @@ jobs:
 
       # This is the shortest job, but in this case it pulls all MSYS/MINGW64
       - name: Clone Emacs
-        run: .\emacs-build.cmd --clone --repo https://github.com/kiennq/emacs.git
+        run: .\emacs-build.cmd --clone
 
       - name: See free space
         run: Get-PSDrive
