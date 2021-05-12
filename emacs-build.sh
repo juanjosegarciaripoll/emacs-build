@@ -173,8 +173,9 @@ function action0_clone ()
 {
     clone_repo "$emacs_branch" "$emacs_repo" "$emacs_source_dir" "$emacs_branch_name"
     if test "$emacs_apply_patches" = "yes"; then
-        apply_patches "$emacs_source_dir"
+        apply_patches "$emacs_source_dir" || true
     fi
+    echo "::set-output name=EMACS_PKG_VERSION::`git_version $emacs_source_dir`"
 }
 
 function action1_ensure_packages ()
@@ -402,8 +403,7 @@ while test -n "$*"; do
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--with-,,'`;;
         --nativecomp) emacs_nativecomp=yes;;
-        --nativecomp-aot) emacs_nativecomp=yes
-                          export NATIVE_FULL_AOT=1;;
+        --nativecomp-aot) emacs_nativecomp=yes; export NATIVE_FULL_AOT=1;;
         --slim) add_all_features
                 delete_feature cairo # We delete features here, so that user can repopulate them
                 delete_feature rsvg
@@ -468,6 +468,10 @@ ensure_mingw_build_software
 
 emacs_extensions=""
 emacs_branch_name=`git_branch_name_to_file_name ${emacs_branch}`
+emacs_source_dir="$emacs_build_git_dir/$emacs_branch_name"
+emacs_build_dir="$emacs_build_build_dir/$emacs_branch_name-$architecture"
+emacs_install_dir="$emacs_build_install_dir/$emacs_branch_name-$architecture"
+emacs_full_install_dir="${emacs_install_dir}-full"
 emacs_nodepsfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-${architecture}-nodeps.zip"
 emacs_depsfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-${architecture}-deps.zip"
 emacs_distfile="$emacs_build_root/zips/emacs-${emacs_branch_name}-${architecture}-full.zip"
@@ -477,10 +481,6 @@ if test "$emacs_branch_name" != "$emacs_branch"; then
     echo Emacs branch ${emacs_branch} renamed to ${emacs_branch_name} to avoid filesystem problems.
 fi
 for action in $actions; do
-    emacs_source_dir="$emacs_build_git_dir/$emacs_branch_name"
-    emacs_build_dir="$emacs_build_build_dir/$emacs_branch_name-$architecture"
-    emacs_install_dir="$emacs_build_install_dir/$emacs_branch_name-$architecture"
-    emacs_full_install_dir="${emacs_install_dir}-full"
     if $action 2>&1 ; then
         echo Action $action succeeded.
     else

@@ -37,6 +37,7 @@ jobs:
 
       # This is the shortest job, but in this case it pulls all MSYS/MINGW64
       - name: Clone Emacs
+        id: clone_repo
         run: .\emacs-build.cmd --clone
 
       - name: See free space
@@ -68,3 +69,18 @@ jobs:
         with:
           name: ${{ matrix.msystem }}-packages
           path: zips/*
+
+      # Create release
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v0.${{ steps.clone_repo.outputs.EMACS_PKG_VERSION }}
+          name: emacs_0.${{ steps.clone_repo.outputs.EMACS_PKG_VERSION }}
+          draft: false
+          prerelease: false
+          artifactErrorsFailBuild: true
+          artifacts: |
+            zips/emacs-master-${{ matrix.arch }}-full.zip
+          artifactContentType: application/zip
+          token: ${{ secrets.GITHUB_TOKEN }}
