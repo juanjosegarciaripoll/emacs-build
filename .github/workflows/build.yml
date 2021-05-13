@@ -25,7 +25,7 @@ jobs:
 
     defaults:
       run:
-        shell: powershell
+        shell: cmd
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -33,35 +33,35 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: See free space
-        run: Get-PSDrive
+        run: powershell -Command Get-PSDrive
 
       # This is the shortest job, but in this case it pulls all MSYS/MINGW64
-      - name: Clone Emacs
-        id: clone_repo
+      - name: Collect dependencies
         run: .\emacs-build.cmd --clone
 
       - name: See free space
-        run: Get-PSDrive
+        run: powershell -Command Get-PSDrive
 
       # Now download dependencies
-      # - name: Collect dependencies
-      #   run: .\emacs-build.cmd --deps
-
-      # - name: See free space
-      #   run: powershell -noprofile -Command Get-PSDrive
-
-      - name: Build Emacs
-        run: .\emacs-build.cmd --nativecomp --slim --no-compress --with-rsvg --build
+      - name: Show we can write text
+        run: .\emacs-build.cmd --deps
 
       - name: See free space
-        run: Get-PSDrive
+        run: powershell -Command Get-PSDrive
+
+      # Build an pack
+      - name: Show we can write text
+        run: .\emacs-build.cmd --build --pack-emacs
+
+      - name: See free space
+        run: powershell -Command Get-PSDrive
 
       # Full emacs
-      - name: Pack full emacs
-        run: .\emacs-build.cmd --nativecomp --slim --no-compress --with-rsvg --pack-all
+      - name: Clone emacs
+        run: .\emacs-build.cmd --pdf-tools --isync --mu --hunspell --pack-all
 
       - name: See free space
-        run: Get-PSDrive
+        run: powershell -Command Get-PSDrive
 
       # Upload everything
       - name: Upload binaries
@@ -69,18 +69,3 @@ jobs:
         with:
           name: ${{ matrix.msystem }}-packages
           path: zips/*
-
-      # Create release
-      - name: Create Release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v0.${{ steps.clone_repo.outputs.EMACS_PKG_VERSION }}
-          name: emacs_0.${{ steps.clone_repo.outputs.EMACS_PKG_VERSION }}
-          draft: false
-          prerelease: false
-          artifactErrorsFailBuild: true
-          artifacts: |
-            zips/emacs-master-${{ matrix.arch }}-full.zip
-          artifactContentType: application/zip
-          token: ${{ secrets.GITHUB_TOKEN }}
