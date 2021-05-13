@@ -359,7 +359,6 @@ lib/((?!emacs)(?!gcc))
 lib/.*\.exe
 lib/lib(?<!gccjit).*.a$
 share/((?!emacs)(?!icons)(?!info))
-usr/bin
 usr/lib/cmake
 usr/lib/gettext
 usr/lib/pkgconfig
