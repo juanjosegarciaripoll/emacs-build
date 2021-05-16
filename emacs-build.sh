@@ -162,7 +162,7 @@ function action0_clean ()
 
 function action0_clean_rest ()
 {
-    rm -rf "$emacs_build_git_dir" "$emacs_build_zip_dir"
+    rm -rf "$emacs_build_git_dir" "$emacs_build_zip_dir" msys2-upgraded.log
     exit 0
 }
 
@@ -305,10 +305,8 @@ lcms2 mingw-lcms2
 xml2 mingw-libxml2
 gnutls mingw-gnutls
 zlib mingw-zlib
+native-compilation mingw-libgccjit
 EOF
-    if test "$emacs_nativecomp" = yes; then
-        echo nativecomp libgccjit
-    fi
 }
 
 function delete_feature () {
@@ -384,7 +382,7 @@ var
 "
 dependency_exclusions=""
 all_features=`feature_list | cut -f 1 -d ' '`
-features="$all_features"
+features=`feature_list | cut -f 1 -d ' ' | grep -v native`
 emacs_branch=""
 
 actions=""
@@ -393,7 +391,6 @@ debug_dependency_list="false"
 emacs_compress_files=no
 emacs_build_version=0.4.1
 emacs_slim_build=no
-emacs_nativecomp=no
 emacs_build_threads=1
 # This is needed for pacman to return the right text
 export LANG=C
@@ -411,7 +408,7 @@ while test -n "$*"; do
         --with-all) add_all_features;;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
         --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
-        --nativecomp) emacs_nativecomp=yes;;
+        --nativecomp) add_feature native-compilation;;
         --slim) add_all_features
                 delete_feature cairo # We delete features here, so that user can repopulate them
                 delete_feature rsvg
@@ -453,15 +450,6 @@ while test -n "$*"; do
     esac
     shift
 done
-if test "$emacs_nativecomp" = "yes"; then
-    if test -n "$emacs_branch"; then
-        echo You cannot specify --nativecomp and a branch together.
-        exit -1
-    fi
-    emacs_branch=feature/native-comp
-    all_features=`feature_list | cut -f 1 -d ' '`
-    add_feature nativecomp
-fi
 if test "$emacs_slim_build" = "yes"; then
     dependency_exclusions="$slim_exclusions"
     emacs_compress_files=yes
