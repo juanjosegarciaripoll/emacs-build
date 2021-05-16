@@ -136,7 +136,7 @@ function emacs_configure_build_dir ()
     cd "$emacs_build_dir"
     options="--disable-build-details --disable-silent-rules --without-dbus"
     if test "$emacs_compress_files" = "no"; then
-        $options="$options --without-compress-install"
+        options="$options --without-compress-install"
     fi
     for f in $all_features; do
         if echo $features | grep $f > /dev/null; then
