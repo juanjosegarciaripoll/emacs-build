@@ -1,4 +1,4 @@
-# emacs-build v0.4
+# emacs-build v0.4.1
 
 Scripts to build a distribution of Emacs from sources, using MSYS2 and Mingw64(32)
 
@@ -183,3 +183,8 @@ Regarding the extensions to Emacs and third-party utilities:
 - Remove --not-slim.
 - Add --strip, and --with-all.
 - Construct --slim out of --with-all, --without-*, --compress and --strip, so that users can counteract their behavior.
+
+## v0.4.1
+
+- Add the MINGW and MSYS directories to PATH (environment) and exec-path.
+- Add the usr/share/emacs directory to load-path.
