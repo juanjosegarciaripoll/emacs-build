@@ -168,7 +168,8 @@ function action0_clean_rest ()
 
 function action0_clone ()
 {
-    clone_repo "$emacs_branch" "$emacs_repo" "$emacs_source_dir" "$emacs_branch_name"
+    clone_repo "$emacs_branch" "$emacs_repo" "$emacs_source_dir" "$emacs_branch_name" && \
+		apply_patches "$emacs_source_dir" $emacs_patches
 }
 
 function action1_ensure_packages ()
@@ -185,7 +186,7 @@ function action2_build ()
     if prepare_source_dir $emacs_source_dir \
             && prepare_build_dir $emacs_build_dir && emacs_configure_build_dir; then
         echo Building Emacs in directory $emacs_build_dir
-        make -j 4 -C $emacs_build_dir && return 0
+        make -j $emacs_build_threads -C $emacs_build_dir && return 0
     fi
     echo Configuration and build process failed
     return -1
@@ -401,6 +402,7 @@ emacs_build_build_dir="$emacs_build_root/build"
 emacs_build_install_dir="$emacs_build_root/pkg"
 emacs_build_zip_dir="$emacs_build_root/zips"
 emacs_strip_executables="no"
+emacs_patches=""
 while test -n "$*"; do
     case $1 in
         --threads) shift; emacs_build_threads="$1";;
@@ -423,6 +425,7 @@ while test -n "$*"; do
         --no-compress) emacs_compress_files=no;;
         --debug) set -x;;
         --debug-dependencies) debug_dependency_list="true";;
+		--patch) shift; emacs_patches="$emacs_patches $1";;
 
         --clean) add_actions action0_clean;;
         --clean-all) add_actions action0_clean action0_clean_rest;;

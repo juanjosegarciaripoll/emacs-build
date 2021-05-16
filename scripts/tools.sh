@@ -42,7 +42,7 @@ function clone_repo ()
         fi
     else
         echo Cloning Emacs repository $repo.
-        git clone --filter=tree:0 -b $branch "$repo" "$source_dir" && \
+        git clone --depth 1 -b $branch "$repo" "$source_dir" && \
             cd "$source_dir" && git config pull.rebase false
         error=$?
         if test $? != 0; then
@@ -56,6 +56,26 @@ function clone_repo ()
     rm -f "$source_dir/configure"
     popd >/dev/null
     return $error
+}
+
+function apply_patches ()
+{
+	pushd . >/dev/null
+	local error
+	local source_dir="$1"
+	shift
+	cd "$source_dir"
+	for patch_file in $*; do
+		echo Applying patch ${patch_file} to repository at ${destination}
+		git apply --ignore-space-change --ignore-whitespace -v "${patch_file}"
+		error=$?
+		if test "$error" != 0; then
+			echo Failed to apply patch ${patch_file}
+			git reset --hard
+		fi
+	done
+	popd > /dev/null
+	return $error
 }
 
 function raw_dependencies_wo_versions ()
