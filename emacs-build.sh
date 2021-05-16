@@ -55,7 +55,7 @@ function write_features () {
     echo "Strip executables: $emacs_strip_executables"
     echo "Emacs features:"
     for f in $features; do echo "  --with-$f"; done
-    for f in $inactive; do echo " --without $f"; done
+    for f in $inactive; do echo "  --without $f"; done
 }
 
 function write_version_number ()
@@ -404,6 +404,7 @@ emacs_strip_executables="no"
 while test -n "$*"; do
     case $1 in
         --threads) shift; emacs_build_threads="$1";;
+		--master) shift; emacs_branch="master";;
         --branch) shift; emacs_branch="$1";;
         --with-all) add_all_features;;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
@@ -456,7 +457,7 @@ if test "$emacs_slim_build" = "yes"; then
     emacs_compress_files=yes
 fi
 if test -z "$emacs_branch"; then
-    emacs_branch="emacs-27.1.90"
+    emacs_branch="emacs-27"
 fi
 if test "$emacs_compress_files" = yes; then
     add_actions action3_gzip
