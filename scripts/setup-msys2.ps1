@@ -21,8 +21,8 @@ if ( "x${msys2_dir}" -eq "x" ) {
 	}
 }
 if ( !(Test-Path ${msys2_dir}\msys2_shell.cmd) ) {
-	$inst_url = 'https://repo.msys2.org/distrib/x86_64/msys2-x86_64-20210419.exe'
-	$installer_checksum = '0a9d21128ee97dfe93fb0f4ad38bc40d3ad1b7ff2ae054846b9ec9f8b775ae5b'
+	$inst_url = 'https://github.com/msys2/msys2-installer/releases/download/2021-04-19/msys2-base-x86_64-20210419.sfx.exe'
+	$installer_checksum = '1f2cfd8e13b0382096e53ead6fd52d0b656a1f81e1b5d82f44cb4ce8ab68755e'
 	$installer = ${msys2_dir} + '\msys2-base.exe'
 
     if ( !(Test-Path ${installer}) ) {
