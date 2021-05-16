@@ -392,7 +392,7 @@ do_clean=""
 debug_dependency_list="false"
 emacs_compress_files=no
 emacs_build_version=0.4.1
-emacs_slim_build=yes
+emacs_slim_build=no
 emacs_nativecomp=no
 emacs_build_threads=1
 # This is needed for pacman to return the right text
