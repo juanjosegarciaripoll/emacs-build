@@ -42,7 +42,7 @@ function clone_repo ()
         fi
     else
         echo Cloning Emacs repository $repo.
-        git clone --depth 1 -b $branch "$repo" "$source_dir" && \
+        git clone --filter=tree:0 -b $branch "$repo" "$source_dir" && \
             cd "$source_dir" && git config pull.rebase false
         error=$?
         if test $? != 0; then
