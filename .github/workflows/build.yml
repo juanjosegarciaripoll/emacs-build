@@ -44,7 +44,7 @@ jobs:
 
       # Full emacs
       - name: Clone emacs
-        run: .\emacs-build.cmd --branch="emacs-28" --pdf-tools --pack-all
+        run: .\emacs-build.cmd --branch "emacs-28" --pdf-tools --pack-all
 
       - name: See free space
         run: powershell -Command Get-PSDrive
