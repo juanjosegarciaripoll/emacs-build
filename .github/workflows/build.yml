@@ -42,15 +42,18 @@ jobs:
       - name: See free space
         run: powershell -Command Get-PSDrive
 
+      - name: Echo build features
+        run: .\emacs-build.cmd --slim --no-compress --without-native-compilation --branch "emacs-28" --features
+
       - name: Build Emacs
-        run: .\emacs-build.cmd --branch "emacs-28" --slim --no-compress --build
+        run: .\emacs-build.cmd --slim --no-compress --without-native-compilation --branch "emacs-28" --build
 
       - name: See free space
         run: powershell -Command Get-PSDrive
 
       # Full emacs
       - name: Pack Emacs
-        run: .\emacs-build.cmd --branch "emacs-28" --slim --no-compress --pdf-tools --pack-all
+        run: .\emacs-build.cmd --slim --no-compress --without-native-compilation --branch "emacs-28" --pdf-tools --pack-all
 
       - name: See free space
         run: powershell -Command Get-PSDrive
