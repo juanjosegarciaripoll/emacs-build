@@ -42,23 +42,9 @@ jobs:
       - name: See free space
         run: powershell -Command Get-PSDrive
 
-      # Now download dependencies
-      - name: Show we can write text
-        run: .\emacs-build.cmd --deps
-
-      - name: See free space
-        run: powershell -Command Get-PSDrive
-
-      # Build an pack
-      - name: Show we can write text
-        run: .\emacs-build.cmd --build --pack-emacs
-
-      - name: See free space
-        run: powershell -Command Get-PSDrive
-
       # Full emacs
       - name: Clone emacs
-        run: .\emacs-build.cmd --pdf-tools --isync --mu --hunspell --pack-all
+        run: .\emacs-build.cmd --branch="emacs-28" --pdf-tools --pack-all
 
       - name: See free space
         run: powershell -Command Get-PSDrive
