@@ -19,6 +19,15 @@ function git_branch_name_to_file_name ()
     echo $1 | sed -e 's,[^-a-zA-Z0-9],_,g'
 }
 
+function git_version ()
+{
+    local source_dir="$1"
+    pushd . >/dev/null
+    cd $source_dir
+    echo `TZ=GMT date +%y%m%d`.`git rev-parse --short HEAD`
+    popd >/dev/null
+}
+
 function clone_repo ()
 {
     # Download a Git repo

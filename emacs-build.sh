@@ -169,7 +169,8 @@ function action0_clean_rest ()
 function action0_clone ()
 {
     clone_repo "$emacs_branch" "$emacs_repo" "$emacs_source_dir" "$emacs_branch_name" && \
-		apply_patches "$emacs_source_dir" $emacs_patches
+    apply_patches "$emacs_source_dir" $emacs_patches
+    echo "::set-output name=EMACS_PKG_VERSION::`git_version $emacs_source_dir`"
 }
 
 function action1_ensure_packages ()

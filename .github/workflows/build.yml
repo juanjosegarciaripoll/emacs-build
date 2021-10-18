@@ -37,23 +37,24 @@ jobs:
 
       # This is the shortest job, but in this case it pulls all MSYS/MINGW64
       - name: Clone Emacs
+        id: clone_repo
         run: .\emacs-build.cmd --branch "emacs-28" --clone
 
       - name: See free space
         run: powershell -Command Get-PSDrive
 
-      - name: Echo build features
-        run: .\emacs-build.cmd --slim --no-compress --without-native-compilation --branch "emacs-28" --features
+      - name: Show build features
+        run: .\emacs-build.cmd --slim --no-compress --with-rsvg --without-native-compilation --branch "emacs-28" --features
 
       - name: Build Emacs
-        run: .\emacs-build.cmd --slim --no-compress --without-native-compilation --branch "emacs-28" --build
+        run: .\emacs-build.cmd --slim --no-compress --with-rsvg --without-native-compilation --branch "emacs-28" --build
 
       - name: See free space
         run: powershell -Command Get-PSDrive
 
       # Full emacs
       - name: Pack Emacs
-        run: .\emacs-build.cmd --slim --no-compress --without-native-compilation --branch "emacs-28" --pdf-tools --pack-all
+        run: .\emacs-build.cmd --slim --no-compress --with-rsvg --without-native-compilation --branch "emacs-28" --pdf-tools --pack-all
 
       - name: See free space
         run: powershell -Command Get-PSDrive
@@ -64,3 +65,18 @@ jobs:
         with:
           name: emacs-${{ matrix.arch }}-packages
           path: zips/*-full.*
+
+      # Create release
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v28.${{ steps.clone_repo.outputs.EMACS_PKG_VERSION }}
+          name: emacs-28.${{ steps.clone_repo.outputs.EMACS_PKG_VERSION }}
+          draft: false
+          prerelease: false
+          artifactErrorsFailBuild: true
+          artifacts: |
+            zips/emacs-emacs-28-${{ matrix.arch }}-full.zip
+          artifactContentType: application/zip
+          token: ${{ secrets.GITHUB_TOKEN }}
