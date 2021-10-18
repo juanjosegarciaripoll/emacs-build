@@ -36,8 +36,14 @@ jobs:
         run: powershell -Command Get-PSDrive
 
       # This is the shortest job, but in this case it pulls all MSYS/MINGW64
-      - name: Collect dependencies
-        run: .\emacs-build.cmd --clone
+      - name: Clone Emacs
+        run: .\emacs-build.cmd --branch "emacs-28" --clone
+
+      - name: See free space
+        run: powershell -Command Get-PSDrive
+
+      - name: Build Emacs
+        run: .\emacs-build.cmd --branch "emacs-28" --build
 
       - name: See free space
         run: powershell -Command Get-PSDrive
