@@ -411,9 +411,8 @@ while test -n "$*"; do
         --branch) shift; emacs_branch="$1";;
         --with-all) add_all_features;;
         --without-*) delete_feature `echo $1 | sed -e 's,--without-,,'`;;
-        --with-*) add_feature `echo $1 | sed -e 's,--without-,,'`;;
-        --nativecomp) add_feature native-compilation
-					  export NATIVE_FULL_AOT=1;;
+        --with-*) add_feature `echo $1 | sed -e 's,--with-,,'`;;
+        --nativecomp) add_feature native-compilation; export NATIVE_FULL_AOT=1;;
         --slim) add_all_features
                 delete_feature cairo # We delete features here, so that user can repopulate them
                 delete_feature rsvg
