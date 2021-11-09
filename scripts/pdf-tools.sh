@@ -27,7 +27,7 @@
 
 function action3_pdf_tools ()
 {
-    local pdf_tools_repo="https://github.com/politza/pdf-tools"
+    local pdf_tools_repo="https://github.com/vedang/pdf-tools"
     local pdf_tools_branch="master"
     local pdf_tools_packages="${mingw_prefix}-poppler ${mingw_prefix}-glib2"
 
