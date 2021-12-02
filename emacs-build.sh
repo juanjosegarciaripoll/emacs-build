@@ -396,7 +396,7 @@ emacs_slim_build=no
 emacs_build_threads=1
 # This is needed for pacman to return the right text
 export LANG=C
-emacs_repo=https://git.savannah.gnu.org/git/emacs.git
+emacs_repo=https://github.com/emacs-mirror/emacs.git
 emacs_build_root=`pwd`
 emacs_build_git_dir="$emacs_build_root/git"
 emacs_build_build_dir="$emacs_build_root/build"
