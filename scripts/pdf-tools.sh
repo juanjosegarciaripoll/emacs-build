@@ -27,9 +27,9 @@
 
 function action3_pdf_tools ()
 {
-    local pdf_tools_repo="https://github.com/politza/pdf-tools"
+    local pdf_tools_repo="https://github.com/vedang/pdf-tools"
     local pdf_tools_branch="master"
-    local pdf_tools_packages="${mingw_prefix}-poppler ${mingw_prefix}-glib2"
+    local pdf_tools_packages="${mingw_prefix}-poppler ${mingw_prefix}-glib2 automake"
 
     local pdf_tools_source_dir="$emacs_build_git_dir/pdf-tools"
     local pdf_tools_server_dir="$pdf_tools_source_dir/server"

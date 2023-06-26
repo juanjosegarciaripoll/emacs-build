@@ -8,8 +8,10 @@ Usage:
 Actions:
    --build       Configure and build Emacs from sources.
    --clean       Remove all directories except sources and zip files.
+   --clean-all   Remove all directories
    --clone       Download Savannah's git repository for Emacs.
    --deps        Create a ZIP file with all the Mingw64/32 dependencies.
+   --ensure      Installs necessary MSYS2 packages.
    --help        Output this help message, --features and exit.
    --pack-emacs  Package an Emacs previously built with the --build option.
    --pack-all    Package an Emacs previously built, with all the Mingw64/32
@@ -22,6 +24,8 @@ Actions:
 
 Build options:
    --branch b    Select Emacs branch (or tag) 'b' for the remaining operations.
+   --master      Same as '--branch master'.
+   --patch       Patches to apply to source tree before building.
    --compress    Ship Emacs with gunzip and compress documentation and Emacs
                  script files.
    --debug       Output all statements run by the script.
@@ -35,11 +39,13 @@ Build options:
                  from the dependencies file. Activate --compress and
                  --strip. (Default configuration)
    --strip       Strip executables and DLL's from debug information.
+   --nativecomp  Add nativecomp feature with full ahead-of-time compilation.
    --with-all    Add all Emacs features.
    --with-*      Add requested feature in the dependencies and build
                  * is any of the known features for emacs in Windows/Mingw
                  (see --features).
    --without-*   Remove requested feature in the dependencies and build.
+   --threads n   Build using 'n' threads.
 
    Options are processed in order. Thus --slim followed by --with-cairo
    would enable Cairo, even though --slim removes it.

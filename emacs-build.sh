@@ -307,6 +307,7 @@ xml2 mingw-libxml2
 gnutls mingw-gnutls
 zlib mingw-zlib
 native-compilation mingw-libgccjit
+tree-sitter mingw-tree-sitter
 EOF
 }
 
